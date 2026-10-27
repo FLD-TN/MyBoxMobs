@@ -1,5 +1,13 @@
 # MyBoxMobs changelog
 
+## 0.5.2 (2026-10-27)
+
+- Spawner hologram: damage is the icon and the number only, like health (no "sát thương" word). Health / damage
+  come from the MyBoxMobs override, else the real values of the last mob of that kind that spawned, else the
+  MythicMobs file; "?" until known. messages.yml goes to config-version 4.
+- Fix: two ALWAYS spawners with keep-chunk-loaded in the same chunk removed each other's chunk ticket every
+  second; tickets are now synced once per tick from the set of chunks that need one.
+
 ## 0.5.1 (2026-10-27)
 
 - Spawner hologram: last line is "Đang tồn tại: x/x quái" with coloured numbers and a white "/" (the dark grey one

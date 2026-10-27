@@ -98,7 +98,6 @@ public final class SpawnerService {
     public void delete(SpawnerDef d) {
         spawners.remove(d.id);
         plugin.holograms().remove(HOLO + d.id);
-        releaseTicket(d);
         for (LiveMob mob : plugin.mobs().tracker().byOrigin("spawner:" + d.id)) {
             plugin.mobs().end(mob, MbmMobDespawnEvent.Reason.COMMAND);
         }
@@ -112,10 +111,11 @@ public final class SpawnerService {
     /** Every second. */
     public void tick() {
         long now = System.currentTimeMillis();
+        Set<Chunk> wanted = new HashSet<>();
         for (SpawnerDef d : spawners.values()) {
             Location loc = d.location();
             if (loc == null) continue;
-            updateTicket(d, loc);
+            if (d.enabled && d.keepChunkLoaded && d.mode == SpawnerDef.Mode.ALWAYS) wanted.add(loc.getChunk());
             boolean loaded = loc.isChunkLoaded();
             List<LiveMob> alive = plugin.mobs().tracker().byOrigin("spawner:" + d.id);
             d.active = d.enabled && loaded && !d.mobs.isEmpty()
@@ -133,6 +133,7 @@ public final class SpawnerService {
             if (d.leash > 0) leash(alive, loc, d.leash);
             if (loaded) hologram(d, loc, alive.size(), now);
         }
+        syncTickets(wanted);
     }
 
     private void wave(SpawnerDef d, Location center, int aliveCount) {
@@ -227,7 +228,10 @@ public final class SpawnerService {
         plugin.holograms().show(HOLO + d.id, loc.clone().add(0, plugin.settings().spawnerHoloHeight, 0), lines);
     }
 
-    /** Max health and melee damage shown in the hologram: the MyBoxMobs override, else the MythicMobs value. */
+    /**
+     * Max health and melee damage shown in the hologram: the MyBoxMobs override, else the values of the last mob
+     * of this kind that spawned, else the MythicMobs file.
+     */
     public String[] mobStats(MobRef ref) {
         double health = Double.NaN;
         double damage = Double.NaN;
@@ -244,14 +248,18 @@ public final class SpawnerService {
                 if (def.source == MobDefinition.Source.MYTHIC) mythicId = def.mythicId;
             }
         }
+        double[] seen = plugin.mobs().observedStats(ref.mythic() ? "mythic:" + ref.id() : ref.id());
+        if (seen != null) {
+            if (Double.isNaN(health)) health = seen[0];
+            if (Double.isNaN(damage)) damage = seen[1];
+        }
         if (mythicId != null) {
             if (Double.isNaN(health)) health = plugin.mythic().baseHealth(mythicId);
             if (Double.isNaN(damage)) damage = plugin.mythic().baseDamage(mythicId);
         }
-        Messages m = plugin.messages();
-        String hp = Double.isNaN(health) ? m.raw("spawner.stat-default") : Format.number(Math.round(health));
-        String dmg = Double.isNaN(damage) ? m.raw("spawner.stat-default")
-                : damage <= 0 ? m.raw("spawner.damage-skills") : Format.decimal(damage);
+        String unknown = plugin.messages().raw("spawner.stat-default");
+        String hp = Double.isNaN(health) ? unknown : Format.number(Math.round(health));
+        String dmg = Double.isNaN(damage) ? unknown : Format.decimal(Math.max(0, damage));
         return new String[]{hp, dmg};
     }
 
@@ -264,21 +272,20 @@ public final class SpawnerService {
         return def == null ? ref.id() : plugin.mobs().displayName(def);
     }
 
-    private void updateTicket(SpawnerDef d, Location loc) {
-        boolean want = d.enabled && d.keepChunkLoaded && d.mode == SpawnerDef.Mode.ALWAYS;
-        if (!want) {
-            releaseTicket(d);
-            return;
+    /**
+     * Keeps exactly one plugin chunk ticket per chunk that at least one enabled ALWAYS spawner with
+     * keep-chunk-loaded needs (two spawners in one chunk no longer remove each other's ticket).
+     */
+    private void syncTickets(Set<Chunk> wanted) {
+        for (Chunk c : List.copyOf(tickets)) {
+            if (!wanted.contains(c)) {
+                c.removePluginChunkTicket(plugin);
+                tickets.remove(c);
+            }
         }
-        Chunk chunk = loc.getChunk();
-        if (tickets.add(chunk)) chunk.addPluginChunkTicket(plugin);
-    }
-
-    private void releaseTicket(SpawnerDef d) {
-        Location loc = d.location();
-        if (loc == null || !loc.isChunkLoaded()) return;
-        Chunk chunk = loc.getChunk();
-        if (tickets.remove(chunk)) chunk.removePluginChunkTicket(plugin);
+        for (Chunk c : wanted) {
+            if (tickets.add(c)) c.addPluginChunkTicket(plugin);
+        }
     }
 
     /** Reload / disable: holograms and chunk tickets go away (spawned mobs are handled by MobService). */

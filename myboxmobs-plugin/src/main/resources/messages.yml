@@ -1,7 +1,7 @@
 # MyBoxMobs — messages
 
 # Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
-config-version: 3
+config-version: 4
 #
 # Colours: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>), PlaceholderAPI
 # Symbols: ✔ success, ✘ error, (!) warning. One line per message, no trailing full stop
@@ -92,9 +92,8 @@ spawner:
   paused: '&#FF8A8Ađang tạm dừng'
   full: '&#FFD166đã đủ mob'
   waiting: '&#BFC7D5chờ người chơi tới gần'
-  # %health% / %damage% of the hologram when the value is unknown / when the mob only deals damage with skills
-  stat-default: 'mặc định'
-  damage-skills: 'sát thương'
+  # %health% / %damage% of the hologram when the value is not known yet (before the first spawn)
+  stat-default: '?'
 
 altar:
   created: '&#7CFC9A✔ Đã tạo bàn triệu hồi &f%id%&#7CFC9A, mở &f/mbm &#7CFC9Ađể đặt vật phẩm yêu cầu'

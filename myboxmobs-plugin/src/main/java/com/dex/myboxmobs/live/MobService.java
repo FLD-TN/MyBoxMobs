@@ -89,6 +89,7 @@ public final class MobService {
         }
         if (entity == null) return null;
         apply(def, entity);
+        observe(def.id, entity);
         LiveMob live = new LiveMob(entity, def, def.id, origin, summoner, System.currentTimeMillis());
         tracker.add(live);
         MbmMobSpawnEvent event = new MbmMobSpawnEvent(entity, def.id, origin, summoner);
@@ -190,9 +191,24 @@ public final class MobService {
         if (entity == null) return null;
         entity.getPersistentDataContainer().set(originKey, PersistentDataType.STRING, origin);
         entity.setPersistent(false);
+        observe("mythic:" + mythicId, entity);
         LiveMob live = new LiveMob(entity, null, "mythic:" + mythicId, origin, null, System.currentTimeMillis());
         tracker.add(live);
         return live;
+    }
+
+    /** Max health / attack damage of the last spawned mob per id (spawner hologram). */
+    private final java.util.Map<String, double[]> observed = new java.util.HashMap<>();
+
+    private void observe(String id, Entity entity) {
+        if (!(entity instanceof LivingEntity le)) return;
+        AttributeInstance hp = le.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        AttributeInstance dmg = le.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+        observed.put(id, new double[]{hp == null ? Double.NaN : hp.getValue(), dmg == null ? Double.NaN : dmg.getValue()});
+    }
+
+    public @Nullable double[] observedStats(String id) {
+        return observed.get(id);
     }
 
     private void tag(Entity e, String defId, String origin) {
