@@ -26,6 +26,11 @@ public final class MobRegistry {
     private static final List<String> OLD_DEFAULT_DEATH = List.of("",
             "%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục", "%top%", "");
 
+    private static final List<String> DEFAULT_SPAWNER_HOLO_053 = List.of("&8[%mob%&8]", "",
+            "&#FF6B6B❤ &#FFC9C9%health%  &7|  &#FFB86B⚔ &#FFE3C2%damage%",
+            "&#B4F8C8Đang tồn tại: &#7CFC9A%alive%&f/&#FFD166%max% &#B4F8C8quái", "",
+            "&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%", "#ICON: SPAWNER");
+
     public MobRegistry(File dataFolder, Logger log) {
         this.folder = new File(dataFolder, "mobs");
         this.log = log;
@@ -61,6 +66,14 @@ public final class MobRegistry {
             if (def.death.lines.equals(OLD_DEFAULT_DEATH) && !defaultDeath.isEmpty()) {
                 def.death.lines.clear();
                 def.death.lines.addAll(defaultDeath);
+                save(def);
+            }
+        }
+        // 0.5.4: value before the icon ("2.500 ❤") in mobs that saved the 0.5.3 default spawner hologram
+        for (MobDefinition def : mobs.values()) {
+            if (def.spawnerHolo.equals(DEFAULT_SPAWNER_HOLO_053) && !defaultSpawnerHolo.isEmpty()) {
+                def.spawnerHolo.clear();
+                def.spawnerHolo.addAll(defaultSpawnerHolo);
                 save(def);
             }
         }

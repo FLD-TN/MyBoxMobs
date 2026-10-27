@@ -1,5 +1,10 @@
 # MyBoxMobs changelog
 
+## 0.5.4 (2026-10-27)
+
+- Spawner hologram: the value comes before its icon ("2.500 ❤  |  8 ⚔"). config.yml goes to config-version 5;
+  mobs that saved the 0.5.3 default template are migrated.
+
 ## 0.5.3 (2026-10-27)
 
 - Spawner hologram per mob: every mob has its own template (mob editor > Holo spawner, Shift + right click
