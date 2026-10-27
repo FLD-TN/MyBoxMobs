@@ -1,5 +1,11 @@
 # MyBoxMobs changelog
 
+## 0.6.1 (2026-10-27)
+
+- The damage table (and the last hitter) of a managed mob is saved in the mob itself when its chunk unloads or the
+  server stops, and restored when it is tracked again: a boss left almost dead keeps its top damage list after a
+  restart or when everybody walks away.
+
 ## 0.6.0 (2026-10-27)
 
 - Mobs survive chunk unloads and restarts: managed mobs are saved with the world like vanilla mobs (spawn time,

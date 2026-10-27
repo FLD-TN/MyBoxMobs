@@ -42,6 +42,8 @@ public final class MobService {
     private final NamespacedKey originKey;
     private final NamespacedKey spawnedKey;
     private final NamespacedKey summonerKey;
+    private final NamespacedKey damageKey;
+    private final NamespacedKey lastHitKey;
     private final List<EndListener> endListeners = new ArrayList<>();
 
     public MobService(MyBoxMobsPlugin plugin) {
@@ -50,6 +52,8 @@ public final class MobService {
         this.originKey = new NamespacedKey(plugin, "origin");
         this.spawnedKey = new NamespacedKey(plugin, "spawned");
         this.summonerKey = new NamespacedKey(plugin, "summoner");
+        this.damageKey = new NamespacedKey(plugin, "damage");
+        this.lastHitKey = new NamespacedKey(plugin, "lasthit");
     }
 
     public Tracker tracker() {
@@ -385,6 +389,7 @@ public final class MobService {
                     continue;
                 }
                 live = new LiveMob(e, def, def.id, origin, summoner, spawned);
+                live.restoreDamage(pdc.get(damageKey, PersistentDataType.STRING), uuidOrNull(pdc.get(lastHitKey, PersistentDataType.STRING)));
                 long now = System.currentTimeMillis();
                 for (SkillEntry s : def.skills) if (s.trigger == SkillEntry.Trigger.TIMER) live.lastCast.put(s, now);
                 if (def.source == MobDefinition.Source.CUSTOM) attachModel(def, e);
@@ -395,18 +400,40 @@ public final class MobService {
         return n;
     }
 
-    /** The chunk of a tracked mob unloads: it stays saved in the world and is adopted again on load. */
+    /**
+     * The chunk of a tracked mob unloads: it stays saved in the world (with its damage table, so the top damage
+     * is kept) and is adopted again on load.
+     */
     public void unloaded(Iterable<Entity> entities) {
         for (Entity e : entities) {
             LiveMob mob = tracker.get(e.getUniqueId());
             if (mob == null) continue;
+            saveDamage(mob);
             mob.ended = true;
             tracker.remove(e.getUniqueId());
         }
     }
 
-    /** Plugin disable: mobs stay in the world (saved with it) and are adopted again on the next start. */
+    /** Plugin disable / restart: mobs stay in the world with their damage table and are adopted on the next start. */
     public void shutdown() {
-        for (LiveMob mob : tracker.all()) mob.ended = true;
+        for (LiveMob mob : tracker.all()) {
+            if (mob.entity.isValid()) saveDamage(mob);
+            mob.ended = true;
+        }
+    }
+
+    private void saveDamage(LiveMob mob) {
+        if (mob.def == null) return;
+        PersistentDataContainer pdc = mob.entity.getPersistentDataContainer();
+        pdc.set(damageKey, PersistentDataType.STRING, mob.serializeDamage());
+        if (mob.lastHitter != null) pdc.set(lastHitKey, PersistentDataType.STRING, mob.lastHitter.toString());
+    }
+
+    private static @Nullable UUID uuidOrNull(@Nullable String raw) {
+        try {
+            return raw == null ? null : UUID.fromString(raw);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 }

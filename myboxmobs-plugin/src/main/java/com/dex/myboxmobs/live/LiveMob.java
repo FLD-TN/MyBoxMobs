@@ -50,6 +50,31 @@ public final class LiveMob {
         lastHitter = player;
     }
 
+    /** Damage table and last hitter saved with the entity ("uuid=damage;uuid=damage", see MobService). */
+    public String serializeDamage() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<UUID, Double> e : damage.entrySet()) {
+            if (sb.length() > 0) sb.append(';');
+            sb.append(e.getKey()).append('=').append(e.getValue());
+        }
+        return sb.toString();
+    }
+
+    public void restoreDamage(@Nullable String data, @Nullable UUID lastHit) {
+        if (data != null && !data.isEmpty()) {
+            for (String part : data.split(";")) {
+                int eq = part.indexOf('=');
+                if (eq <= 0) continue;
+                try {
+                    damage.merge(UUID.fromString(part.substring(0, eq)), Double.parseDouble(part.substring(eq + 1)), Double::sum);
+                } catch (IllegalArgumentException ignored) {
+                    // a broken entry is skipped
+                }
+            }
+        }
+        if (lastHit != null && damage.containsKey(lastHit)) lastHitter = lastHit;
+    }
+
     /** Damage per player, highest first. */
     public LinkedHashMap<UUID, Double> sortedDamage() {
         LinkedHashMap<UUID, Double> out = new LinkedHashMap<>();
