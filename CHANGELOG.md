@@ -1,5 +1,12 @@
 # MyBoxMobs changelog
 
+## 0.7.3 (2026-10-27)
+
+- `/mbm spawn` without coordinates, "Spawn thử" and the spawn button of the mob list put the mob 4 blocks in front
+  of the admin, on the ground, facing them, instead of on the admin's own position. A mob spawned exactly on its
+  target made MythicMobs `look` / `lunge` aim along a zero vector: console spam "Invalid entity rotation: NaN" and
+  "x not finite" (e.g. the Kragan intro).
+
 ## 0.7.2 (2026-10-27)
 
 - Health display is now opt-in per mob, both off by default (owner decision): "Thanh máu ở tên" (on: name + bar,

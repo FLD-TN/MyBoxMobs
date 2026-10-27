@@ -164,7 +164,7 @@ public final class MobEditorMenu extends Menu {
         set(49, icon(Material.EGG, "&#7CFC9ASpawn thử", Lore.of()
                 .desc("Spawn mob này tại chỗ bạn đứng để kiểm tra.").action("Chuột trái để spawn").build()), click -> {
             player.closeInventory();
-            if (plugin.mobs().spawn(def, player.getLocation(), "command", null, true) == null) {
+            if (plugin.mobs().spawn(def, com.dex.myboxmobs.command.MbmCommand.inFront(player), "command", null, true) == null) {
                 plugin.messages().send(player, "mob.spawn-failed", "id", def.id);
             } else {
                 plugin.messages().send(player, "mob.spawned", "id", def.id, "amount", "1");

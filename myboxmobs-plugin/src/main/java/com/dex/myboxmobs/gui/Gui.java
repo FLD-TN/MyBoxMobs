@@ -51,7 +51,7 @@ public final class Gui {
                         }, () -> mobs(plugin, p)).open();
                     } else if (click.isRightClick()) {
                         p.closeInventory();
-                        if (plugin.mobs().spawn(def, p.getLocation(), "command", null, true) == null) {
+                        if (plugin.mobs().spawn(def, com.dex.myboxmobs.command.MbmCommand.inFront(p), "command", null, true) == null) {
                             plugin.messages().send(p, "mob.spawn-failed", "id", def.id);
                         } else {
                             plugin.messages().send(p, "mob.spawned", "id", def.id, "amount", "1");

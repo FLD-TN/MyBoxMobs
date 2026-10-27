@@ -30,6 +30,9 @@ public final class MbmCommand implements TabExecutor {
 
     private static final List<String> SUBS = List.of("spawn", "kill", "killall", "list", "spawner", "altar", "reload", "help");
 
+    /** Blocks in front of the admin where /mbm spawn puts the mob. */
+    private static final double SPAWN_DISTANCE = 4;
+
     private final MyBoxMobsPlugin plugin;
 
     public MbmCommand(MyBoxMobsPlugin plugin) {
@@ -101,7 +104,7 @@ public final class MbmCommand implements TabExecutor {
             }
             at = new Location(w, x, y, z);
         } else if (sender instanceof Player p) {
-            at = p.getLocation();
+            at = inFront(p);
         } else {
             m().send(sender, "command.usage", "usage", "/mbm spawn <mob> <số lượng> <world> <x> <y> <z>");
             return;
@@ -112,6 +115,25 @@ public final class MbmCommand implements TabExecutor {
         }
         if (done == 0) m().send(sender, "mob.spawn-failed", "id", def.id);
         else m().send(sender, "mob.spawned", "id", def.id, "amount", String.valueOf(done));
+    }
+
+    /**
+     * A few blocks in front of the player, on the ground, facing them. Never on the player's own position: skills
+     * aimed at a target standing exactly on the mob (look, lunge) get a zero direction and fail with NaN.
+     */
+    public static Location inFront(Player p) {
+        Location base = p.getLocation();
+        org.bukkit.util.Vector dir = base.getDirection().setY(0);
+        if (dir.lengthSquared() < 1.0E-6) dir = new org.bukkit.util.Vector(0, 0, 1);
+        dir.normalize();
+        Location at = base.clone().add(dir.clone().multiply(SPAWN_DISTANCE));
+        // out of a wall (up to 3 blocks), then down to the ground (up to 6 blocks)
+        for (int i = 0; i < 3 && !at.getBlock().isPassable(); i++) at.add(0, 1, 0);
+        for (int i = 0; i < 6 && at.clone().subtract(0, 1, 0).getBlock().isPassable(); i++) at.subtract(0, 1, 0);
+        if (!at.getBlock().isPassable()) at = base.clone().add(dir.clone().multiply(1.5));
+        at.setDirection(dir.multiply(-1));
+        at.setPitch(0);
+        return at;
     }
 
     private void kill(CommandSender sender, String[] args, boolean all) {

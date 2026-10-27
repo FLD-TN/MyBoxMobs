@@ -68,7 +68,7 @@ announce:
 # to left). Off = the name alone. Mobs with a ModelEngine model show it as a floating text above the model.
 nametag:
   format: '%name% &8| %bar%'
-  bar-length: 20
+  bar-length: 10
   bar-char: '|'
   full-color: '&#FF4D4D'
   empty-color: '&7'
