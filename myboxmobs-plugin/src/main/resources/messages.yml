@@ -59,6 +59,7 @@ input:
   rank-chance: '&#FFD166Nhập tỉ lệ nhận quà (%) của hạng này'
   line: '&#FFD166Nhập nội dung dòng &8(&#BFC7D5gõ &ftrong &#BFC7D5cho dòng trống&8)'
   interval: '&#FFD166Nhập số giây giữa hai đợt spawn'
+  respawn-delay: '&#FFD166Nhập số giây hồi sinh sau khi mob chết (ví dụ &f1800 &#FFD166= 30 phút)'
   amount-wave: '&#FFD166Nhập số mob mỗi đợt'
   max-alive: '&#FFD166Nhập số mob tối đa sống cùng lúc'
   radius: '&#FFD166Nhập bán kính (block)'
@@ -97,6 +98,8 @@ spawner:
   list-line: '&7• &f%id% &8- &#BFC7D5đang sống &f%alive%/%max% &8(%state%&8)'
   # %countdown% of the hologram in special states
   paused: '&#FF8A8Ađang tạm dừng'
+  # hồi sinh sau khi chết: mob đang sống đủ số lượng
+  alive-now: '&#7CFC9Ađang xuất hiện'
   full: '&#FFD166đã đủ mob'
   waiting: '&#BFC7D5chờ người chơi tới gần'
   # %health% / %damage% of the hologram when the value is not known yet (before the first spawn)

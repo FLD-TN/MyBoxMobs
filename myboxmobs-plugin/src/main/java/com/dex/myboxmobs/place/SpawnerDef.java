@@ -46,6 +46,13 @@ public final class SpawnerDef {
     public final List<String> times = new ArrayList<>();
     /** Epoch millis of the next wave, saved so a restart keeps the countdown; 0 = not planned yet. */
     public long nextWaveAt;
+    /**
+     * Respawn after death: every mob that is gone (killed, lifetime over, removed) comes back {@code intervalSeconds}
+     * after it left, one timer per empty place; the first mobs wait one interval too. Replaces interval and schedule.
+     */
+    public boolean afterDeath;
+    /** Epoch millis of the pending respawns (one per empty place), saved. */
+    public final List<Long> respawnAt = new ArrayList<>();
 
     // runtime, not saved
     public boolean active;
@@ -96,6 +103,40 @@ public final class SpawnerDef {
         s.set("enabled", enabled);
         s.set("times", times);
         s.set("next-wave-at", nextWaveAt);
+        s.set("after-death", afterDeath);
+        s.set("respawn-at", respawnAt);
+    }
+
+    /**
+     * After-death mode, every second: one timer per empty place. A place that just became empty gets a timer of
+     * one interval from now; when mobs come back (chunk loaded again) the latest timers go. True when changed.
+     */
+    public boolean syncRespawnTimers(int alive, long now) {
+        int missing = maxAlive - Math.max(0, alive) - respawnAt.size();
+        if (missing == 0) return false;
+        respawnAt.sort(null);
+        for (int i = 0; i < missing; i++) respawnAt.add(now + intervalSeconds * 1000L);
+        for (int i = 0; i < -missing && !respawnAt.isEmpty(); i++) respawnAt.remove(respawnAt.size() - 1);
+        return true;
+    }
+
+    /** After-death mode: removes and counts the timers that are due (at most the free places). */
+    public int takeDue(int alive, long now) {
+        respawnAt.sort(null);
+        int room = maxAlive - Math.max(0, alive);
+        int n = 0;
+        while (n < room && !respawnAt.isEmpty() && respawnAt.get(0) <= now) {
+            respawnAt.remove(0);
+            n++;
+        }
+        return n;
+    }
+
+    /** Earliest pending respawn, 0 when none. */
+    public long nextRespawn() {
+        long best = 0;
+        for (long t : respawnAt) if (best == 0 || t < best) best = t;
+        return best;
     }
 
     public static SpawnerDef load(String id, ConfigurationSection s) {
@@ -125,6 +166,8 @@ public final class SpawnerDef {
         d.enabled = s.getBoolean("enabled", true);
         d.times.addAll(s.getStringList("times"));
         d.nextWaveAt = s.getLong("next-wave-at", 0);
+        d.afterDeath = s.getBoolean("after-death", false);
+        d.respawnAt.addAll(s.getLongList("respawn-at"));
         return d;
     }
 }

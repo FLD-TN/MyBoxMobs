@@ -1,5 +1,14 @@
 # MyBoxMobs changelog
 
+## 0.7.6 (2026-10-27)
+
+- Spawner option "Hồi sinh sau khi chết": every mob that is gone (killed, lifetime over, removed) comes back exactly
+  one interval after it left, with its own timer per mob; the first mobs wait one interval too. Replaces the
+  countdown and the schedule while on. The hologram shows "đang xuất hiện" while full, else the countdown to the
+  next respawn. Timers are saved (`after-death`, `respawn-at` in spawners.yml) and survive restarts.
+- Spawners count their mobs only once the chunk's entities are loaded too, so a living mob not adopted yet is no
+  longer taken for a missing one.
+
 ## 0.7.5 (2026-10-27)
 
 Review pass (bugs, leaks, CPU).

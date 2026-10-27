@@ -117,10 +117,23 @@ public final class SpawnerService {
             Location loc = d.location();
             if (loc == null) continue;
             if (d.enabled && d.keepChunkLoaded && d.mode == SpawnerDef.Mode.ALWAYS) wanted.add(loc.getChunk());
-            boolean loaded = loc.isChunkLoaded();
+            boolean loaded = loc.isChunkLoaded() && loc.getChunk().isEntitiesLoaded();
             List<LiveMob> alive = byOrigin.getOrDefault("spawner:" + d.id, List.of());
             d.active = d.enabled && loaded && !d.mobs.isEmpty()
                     && (d.mode == SpawnerDef.Mode.ALWAYS || playerNear(loc, d.activationRadius));
+            if (d.afterDeath) {
+                // a place counts as empty only while the spawner's chunk and its entities are loaded
+                if (loaded && d.syncRespawnTimers(alive.size(), now)) planned = true;
+                int due = d.active ? d.takeDue(alive.size(), now) : 0;
+                if (due > 0) {
+                    spawn(d, loc, due);
+                    planned = true;
+                    alive = plugin.mobs().tracker().byOrigin("spawner:" + d.id);
+                }
+                if (d.leash > 0) leash(alive, loc, d.leash);
+                if (loaded) hologram(d, loc, alive.size(), now);
+                continue;
+            }
             // the countdown always runs (also without players); a due wave waits until the spawner is active
             if (d.nextWaveAt == 0) {
                 d.nextWaveAt = nextWave(d, now);
@@ -166,7 +179,10 @@ public final class SpawnerService {
     }
 
     private void wave(SpawnerDef d, Location center, int aliveCount) {
-        int n = Math.min(d.amount, d.maxAlive - aliveCount);
+        spawn(d, center, Math.min(d.amount, d.maxAlive - aliveCount));
+    }
+
+    private void spawn(SpawnerDef d, Location center, int n) {
         boolean announced = false;
         for (int i = 0; i < n; i++) {
             SpawnerDef.Entry entry = pick(d.mobs);
@@ -238,6 +254,11 @@ public final class SpawnerService {
         String countdown;
         if (!d.enabled) {
             countdown = m.raw("spawner.paused");
+        } else if (d.afterDeath) {
+            long next = d.nextRespawn();
+            if (alive >= d.maxAlive || next == 0) countdown = m.raw("spawner.alive-now");
+            else if (!d.active && now >= next) countdown = m.raw("spawner.waiting");
+            else countdown = Format.duration(Math.max(0, (next - now + 999) / 1000));
         } else if (alive >= d.maxAlive) {
             countdown = m.raw("spawner.full");
         } else if (!d.active && now >= d.nextWaveAt) {

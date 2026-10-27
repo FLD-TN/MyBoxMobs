@@ -40,13 +40,20 @@ public final class SpawnerEditorMenu extends Menu {
         }
         set(10, icon(Material.ZOMBIE_HEAD, Palette.SPAWNER + "Mob spawn ra", mobs.action("Chuột trái để chỉnh").build()),
                 click -> new SpawnerMobsMenu(plugin, player, d, this).open());
-        number(11, Material.CLOCK, "Thời gian giữa các đợt", d.times.isEmpty() ? Format.duration(d.intervalSeconds)
-                : "không dùng (đang theo lịch giờ)", "input.interval", 1, 604800, v -> {
-                    d.intervalSeconds = (int) v;
-                    d.nextWaveAt = 0;
-                });
-        number(12, Material.EGG, "Số mob mỗi đợt", String.valueOf(d.amount), "input.amount-wave", 1, 100,
-                v -> d.amount = (int) v);
+        if (d.afterDeath) {
+            number(11, Material.CLOCK, "Hồi sinh sau khi chết", Format.duration(d.intervalSeconds), "input.respawn-delay",
+                    1, 604800, v -> d.intervalSeconds = (int) v);
+            number(12, Material.EGG, "Số mob mỗi đợt", "không dùng (mỗi con hồi sinh riêng)", "input.amount-wave", 1, 100,
+                    v -> d.amount = (int) v);
+        } else {
+            number(11, Material.CLOCK, "Thời gian giữa các đợt", d.times.isEmpty() ? Format.duration(d.intervalSeconds)
+                    : "không dùng (đang theo lịch giờ)", "input.interval", 1, 604800, v -> {
+                        d.intervalSeconds = (int) v;
+                        d.nextWaveAt = 0;
+                    });
+            number(12, Material.EGG, "Số mob mỗi đợt", String.valueOf(d.amount), "input.amount-wave", 1, 100,
+                    v -> d.amount = (int) v);
+        }
         number(13, Material.CHAIN, "Tối đa sống cùng lúc", String.valueOf(d.maxAlive), "input.max-alive", 1, 500,
                 v -> d.maxAlive = (int) v);
         boolean nearby = d.mode == SpawnerDef.Mode.NEARBY;
@@ -110,9 +117,10 @@ public final class SpawnerEditorMenu extends Menu {
         });
         Lore schedule = Lore.of().desc("Spawn đúng các giờ trong ngày (giờ Việt Nam) thay vì đếm ngược. Giờ bị lỡ lúc server tắt sẽ bỏ qua.")
                 .section("Thông tin:");
-        if (d.times.isEmpty()) schedule.row("Lịch", "không, đang đếm ngược");
+        if (d.afterDeath) schedule.row("Lịch", "không dùng (đang hồi sinh sau khi chết)");
+        else if (d.times.isEmpty()) schedule.row("Lịch", "không, đang đếm ngược");
         else schedule.row("Lịch", String.join(", ", d.times));
-        if (d.nextWaveAt > 0) {
+        if (d.nextWaveAt > 0 && !d.afterDeath) {
             schedule.row("Đợt tiếp theo", java.time.Instant.ofEpochMilli(d.nextWaveAt).atZone(plugin.settings().timezone)
                     .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM")));
         }
@@ -142,6 +150,24 @@ public final class SpawnerEditorMenu extends Menu {
                 d.nextWaveAt = 0;
                 save();
             });
+        });
+        Lore respawn = Lore.of()
+                .desc("Bật: mỗi con chết (bị giết, hết thời gian tồn tại, bị xoá) thì đúng một khoảng thời gian sau mới ra lại con khác, đồng hồ riêng từng con. Lần đầu cũng chờ đủ thời gian. Thay cho đếm ngược và lịch giờ.")
+                .section("Thông tin:").row("Hiện tại", Palette.onOff(d.afterDeath));
+        if (d.afterDeath) {
+            long next = d.nextRespawn();
+            respawn.row("Đang chờ hồi sinh", d.respawnAt.size() + " con");
+            if (next > 0) {
+                respawn.row("Con tiếp theo", java.time.Instant.ofEpochMilli(next).atZone(plugin.settings().timezone)
+                        .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM")));
+            }
+        }
+        set(25, icon(Material.TOTEM_OF_UNDYING, Palette.SPAWNER + "Hồi sinh sau khi chết", respawn
+                .action("Chuột trái để bật/tắt").build()), click -> {
+            d.afterDeath = !d.afterDeath;
+            d.respawnAt.clear();
+            d.nextWaveAt = 0;
+            changed();
         });
         set(45, icon(Material.ARROW, "&#BFC7D5Quay lại", Lore.of().action("Chuột trái để quay lại").build()),
                 click -> Gui.spawners(plugin, player));
