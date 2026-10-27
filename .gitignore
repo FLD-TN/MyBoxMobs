@@ -1,0 +1,12 @@
+.gradle/
+build/
+.idea/
+*.iml
+out/
+.snapshot-*/
+*.log
+# third-party plugin jars: never pushed (licensed / large); see README for where to get them
+/*.jar
+libs/MythicMobs-*.jar
+libs/ModelEngine-*.jar
+libs/DecentHolograms-*.jar

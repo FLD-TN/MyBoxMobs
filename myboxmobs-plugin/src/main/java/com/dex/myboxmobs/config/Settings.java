@@ -1,0 +1,52 @@
+package com.dex.myboxmobs.config;
+
+import java.util.List;
+import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+
+/** Values of config.yml, re-read on /mbm reload. */
+public final class Settings {
+
+    public final int clickCooldownTicks;
+    public final int inputTimeoutSeconds;
+    public final String boostType;
+    public final String boostItems;
+    public final String boostMoney;
+    public final String boostGem;
+    public final double spawnerHoloHeight;
+    public final double altarHoloHeight;
+    public final Material altarDefaultBlock;
+    public final int altarInteractRange;
+    public final List<String> spawnerHoloLines;
+    public final List<String> altarHoloLines;
+    public final List<String> altarHoloCooldownLines;
+    public final String topLine;
+    public final String moneyItem;
+    public final String gemItem;
+    public final int maxHealth;
+
+    public Settings(FileConfiguration c) {
+        clickCooldownTicks = Math.max(1, c.getInt("gui.click-cooldown-ticks", 4));
+        inputTimeoutSeconds = Math.max(5, c.getInt("gui.input-timeout-seconds", 30));
+        boostType = c.getString("multiplier.boost-type", "mob");
+        boostItems = orDefault(c.getString("multiplier.types.items", ""), boostType);
+        boostMoney = orDefault(c.getString("multiplier.types.money", ""), boostType);
+        boostGem = orDefault(c.getString("multiplier.types.gem", ""), boostType);
+        spawnerHoloHeight = c.getDouble("hologram.spawner-height", 2.5);
+        altarHoloHeight = c.getDouble("hologram.altar-height", 2.3);
+        Material block = Material.matchMaterial(c.getString("altar.default-block", "SCULK_SHRIEKER"));
+        altarDefaultBlock = block == null || !block.isBlock() ? Material.SCULK_SHRIEKER : block;
+        altarInteractRange = Math.max(2, c.getInt("altar.target-range", 6));
+        spawnerHoloLines = c.getStringList("hologram.spawner-lines");
+        altarHoloLines = c.getStringList("hologram.altar-lines");
+        altarHoloCooldownLines = c.getStringList("hologram.altar-cooldown-lines");
+        topLine = c.getString("announce.top-line", "&7  #%rank% &f%player% &8- &e%damage% sát thương");
+        moneyItem = c.getString("gui.money-item", "treasure:money_item");
+        gemItem = c.getString("gui.gem-item", "treasure:gem_item");
+        maxHealth = Math.max(1, c.getInt("max-health", 2048));
+    }
+
+    private static String orDefault(String s, String def) {
+        return s == null || s.isBlank() ? def : s;
+    }
+}

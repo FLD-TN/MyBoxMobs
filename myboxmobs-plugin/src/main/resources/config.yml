@@ -1,0 +1,73 @@
+# MyBoxMobs — configuration
+
+# Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
+config-version: 1
+#
+# Colours in every text: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>, <rainbow>, <#hex>)
+# and PlaceholderAPI placeholders, all in the same line.
+
+# Highest max health a mob may get (keep it at or below settings.attribute.maxHealth.max in spigot.yml)
+max-health: 2048
+
+# Reward multiplier for donor ranks (spec 5.4). Uses BoxCore boosts: add the type below to BoxCore config.yml
+# (types: mob: decimal: true ...), then give ranks the permission boxcore.boost.mob.<n>, e.g.
+#   boxcore.boost.mob.2   = x2       boxcore.boost.mob.1_5 = x1.5
+# Items, money and gem are multiplied (rounded down); commands and chances never are.
+multiplier:
+  boost-type: mob
+  # Optional: another boost type per reward kind ('' = boost-type)
+  types:
+    items: ''
+    money: ''
+    gem: ''
+
+announce:
+  # One line per rank of the top damage list, replaces a line that only contains %top%
+  top-line: '&7  #%rank% &f%player% &8- &e%damage% sát thương'
+  # Lines given to a newly created mob (each mob then keeps its own copy, edit them in the GUI)
+  default-lines:
+    spawn:
+      - ''
+      - '&#FFD166(!) %mob% &#BFC7D5đã xuất hiện tại &f%world% %x% %y% %z%'
+      - ''
+    death:
+      - ''
+      - '%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục'
+      - '%top%'
+      - ''
+    despawn:
+      - '%mob% &#BFC7D5đã rời đi vì không ai hạ gục kịp'
+
+hologram:
+  # Height above the spawner location / above the altar block
+  spawner-height: 2.5
+  altar-height: 2.3
+  # Default lines of a new spawner. %mob% %countdown% %alive% %max%
+  spawner-lines:
+    - '%mob%'
+    - '&#BFC7D5Xuất hiện sau: &f%countdown%'
+    - '&#BFC7D5Đang sống: &f%alive%&8/&f%max%'
+  # Default lines of a new altar. %mob% %item% %amount%
+  altar-lines:
+    - '&#F7A4C0Triệu hồi %mob%'
+    - '&#BFC7D5Yêu cầu: %item% &8x&f%amount%'
+    - '&8[&#7CFC9AChuột phải với vật phẩm để triệu hồi&8]'
+  # Shown instead while an altar cools down (same for every altar). %mob% %countdown%
+  altar-cooldown-lines:
+    - '&#F7A4C0Triệu hồi %mob%'
+    - '&#BFC7D5Có thể triệu hồi sau: &f%countdown%'
+
+altar:
+  # Block suggested in messages; any block can be an altar
+  default-block: SCULK_SHRIEKER
+  # How far /mbm altar create looks for the block you are looking at
+  target-range: 6
+
+gui:
+  # Ticks between two handled clicks of one admin
+  click-cooldown-ticks: 4
+  # Seconds to type a value in chat before the input is cancelled
+  input-timeout-seconds: 30
+  # Icons of money / gem rewards (ItemsAdder ids; vanilla items are used when missing)
+  money-item: 'treasure:money_item'
+  gem-item: 'treasure:gem_item'

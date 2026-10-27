@@ -1,0 +1,19 @@
+name: MyBoxMobs
+version: '${version}'
+main: com.dex.myboxmobs.MyBoxMobsPlugin
+api-version: '1.21'
+author: Dex
+description: Mob và boss tuỳ chỉnh của server BoxPvP (MythicMobs + ModelEngine)
+depend: [MythicMobs]
+softdepend: [ModelEngine, DecentHolograms, Vault, BoxCore, PlaceholderAPI, ItemsAdder]
+commands:
+  myboxmobs:
+    description: Quản lý MyBoxMobs
+    aliases: [mbm]
+permissions:
+  myboxmobs.admin:
+    description: Mọi lệnh và GUI quản trị của MyBoxMobs
+    default: op
+  myboxmobs.altar.use:
+    description: Dùng bàn triệu hồi
+    default: true

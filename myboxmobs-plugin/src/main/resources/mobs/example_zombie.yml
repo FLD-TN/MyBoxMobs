@@ -1,0 +1,50 @@
+# Example mob created on the first start. Edit it in /mbm or delete it.
+config-version: 1
+source: CUSTOM
+mythic-id: ''
+entity-type: ZOMBIE
+display-name: '<gradient:#A0E7E5:#B4F8C8>Zombie Mẫu</gradient>'
+stats:
+  health: 100.0
+  armor: 4.0
+  armor-toughness: -1.0
+  damage: 6.0
+  speed: -1.0
+  follow-range: -1.0
+  knockback-resistance: -1.0
+equipment:
+  HAND: ''
+  OFF_HAND: ''
+  HEAD: ''
+  CHEST: ''
+  LEGS: ''
+  FEET: ''
+model:
+  id: ''
+  mode: ONLY_IF_NONE
+  scale: 1.0
+  hide-base: true
+xp: 10
+lifetime-seconds: 600
+rewards:
+  mode: KILLER
+  multiplier-enabled: true
+  killer:
+    - kind: MONEY
+      min: 100
+      max: 250
+      chance: 100.0
+  top: []
+announce:
+  spawn:
+    enabled: true
+    lines:
+      - '&#FFD166(!) %mob% &#BFC7D5đã xuất hiện tại &f%world% %x% %y% %z%'
+  death:
+    enabled: true
+    lines:
+      - '%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục'
+  despawn:
+    enabled: false
+    lines:
+      - '%mob% &#BFC7D5đã rời đi vì không ai hạ gục kịp'

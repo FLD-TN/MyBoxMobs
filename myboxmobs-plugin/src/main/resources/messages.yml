@@ -1,0 +1,122 @@
+# MyBoxMobs — messages
+
+# Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
+config-version: 1
+#
+# Colours: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>), PlaceholderAPI
+# Symbols: ✔ success, ✘ error, (!) warning. One line per message, no trailing full stop
+# A message set to '' is not sent
+
+prefix: '<dark_gray>(</dark_gray><bold><#33FD42>B</#33FD42><#44F651>o</#44F651><#55EF60>x</#55EF60><#65E96F>P</#65E96F><#76E27E>v</#76E27E><#87DB8D>P</#87DB8D></bold><dark_gray>)</dark_gray> '
+
+state:
+  on: '&#7CFC9Abật'
+  off: '&#FF6B6Btắt'
+
+command:
+  no-permission: '&#FF6B6B✘ Bạn không có quyền dùng lệnh này'
+  player-only: '&#FF6B6B✘ Lệnh này chỉ dùng trong game'
+  reloaded: '&#7CFC9A✔ Đã tải lại MyBoxMobs'
+  usage: '&#FFD166(!) Cách dùng: &f%usage%'
+  bad-location: '&#FF6B6B✘ Vị trí không hợp lệ'
+  unknown-world: '&#FF6B6B✘ Không có world &f%world%'
+  help:
+    - '&#E0BBE4MyBoxMobs &8- &#BFC7D5lệnh quản trị'
+    - '&7• &f/mbm &8- &#BFC7D5mở GUI quản trị'
+    - '&7• &f/mbm spawn <mob> [số lượng] [world x y z]'
+    - '&7• &f/mbm kill <mob> [world] &8- &#BFC7D5xoá mob đang sống'
+    - '&7• &f/mbm killall [world]'
+    - '&7• &f/mbm list &8- &#BFC7D5mob đang sống (bấm để dịch chuyển)'
+    - '&7• &f/mbm spawner <create|delete|list|tp|toggle|holo> [mã]'
+    - '&7• &f/mbm altar <create|delete|list> [mã] [mob]'
+    - '&7• &f/mbm reload'
+
+list:
+  header: '&#F6E58DMob đang sống: &f%amount%'
+  line: '&7• %mob% &8[%id%&8] &#BFC7D5%world% %x% %y% %z% &8(%origin%)'
+  hover: '&#7CFC9ABấm để dịch chuyển tới'
+
+input:
+  hint: '&#BFC7D5Gõ vào chat, gõ &fhuy &#BFC7D5để huỷ (tự huỷ sau &f%seconds% giây&#BFC7D5)'
+  timeout: '&#FFD166(!) Hết thời gian nhập, đã huỷ'
+  cancelled: '&#BFC7D5Đã huỷ nhập'
+  invalid-number: '&#FF6B6B✘ Số không hợp lệ, hãy nhập từ &f%min% &#FF6B6Bđến &f%max%'
+  invalid-range: '&#FF6B6B✘ Hãy nhập một số (5) hoặc khoảng (5-10), nhỏ nhất là 1'
+  invalid-id: '&#FF6B6B✘ Mã chỉ gồm chữ thường a-z, số và dấu _ (tối đa 32 ký tự)'
+  search: '&#FFD166Nhập từ khoá cần tìm'
+  mob-id: '&#FFD166Nhập mã cho mob mới &8(&#BFC7D5gõ &fok &#BFC7D5để dùng &f%suggestion%&8)'
+  spawner-id: '&#FFD166Nhập mã cho spawner mới'
+  display-name: '&#FFD166Nhập tên hiển thị &8(&#BFC7D5hỗ trợ &&a, &&#RRGGBB, \<gradient:#..:#..>&8)'
+  lifetime: '&#FFD166Nhập thời gian tồn tại (giây), &f0 &#FFD166là mãi mãi'
+  xp: '&#FFD166Nhập số kinh nghiệm rơi ra'
+  stat: '&#FFD166Nhập giá trị mới'
+  model-scale: '&#FFD166Nhập kích thước model (ví dụ &f1,5&#FFD166)'
+  command: '&#FFD166Nhập lệnh console, &f%player% &#FFD166là tên người nhận'
+  amount: '&#FFD166Nhập số lượng: một số (&f5&#FFD166) hoặc khoảng (&f5-10&#FFD166)'
+  chance: '&#FFD166Nhập tỉ lệ rơi (%) từ &f0,01 &#FFD166đến &f100'
+  rank-chance: '&#FFD166Nhập tỉ lệ nhận quà (%) của hạng này'
+  line: '&#FFD166Nhập nội dung dòng &8(&#BFC7D5gõ &ftrong &#BFC7D5cho dòng trống&8)'
+  interval: '&#FFD166Nhập số giây giữa hai đợt spawn'
+  amount-wave: '&#FFD166Nhập số mob mỗi đợt'
+  max-alive: '&#FFD166Nhập số mob tối đa sống cùng lúc'
+  radius: '&#FFD166Nhập bán kính (block)'
+  leash: '&#FFD166Nhập khoảng cách tối đa mob được đi xa, &f0 &#FFD166là tắt'
+  weight: '&#FFD166Nhập trọng số (càng cao càng hay xuất hiện)'
+  amount-required: '&#FFD166Nhập số lượng vật phẩm yêu cầu'
+  cooldown: '&#FFD166Nhập thời gian chờ (giây), &f0 &#FFD166là không chờ'
+
+gui:
+  select-slot-first: '&#FFD166(!) Hãy chọn một ô trang bị trước'
+  list-full: '&#FF6B6B✘ Danh sách đã đầy'
+
+mob:
+  created: '&#7CFC9A✔ Đã tạo mob &f%id%'
+  deleted: '&#7CFC9A✔ Đã xoá mob &f%id%'
+  exists: '&#FF6B6B✘ Mob &f%id% &#FF6B6Bđã tồn tại'
+  unknown: '&#FF6B6B✘ Không có mob &f%id%'
+  spawned: '&#7CFC9A✔ Đã spawn &f%amount%x %id%'
+  spawn-failed: '&#FF6B6B✘ Không spawn được &f%id%&#FF6B6B, xem console'
+  killed: '&#7CFC9A✔ Đã xoá &f%amount% &#7CFC9Amob'
+
+spawner:
+  created: '&#7CFC9A✔ Đã tạo spawner &f%id% &#7CFC9Atại chỗ bạn, mở &f/mbm &#7CFC9Ađể chọn mob'
+  deleted: '&#7CFC9A✔ Đã xoá spawner &f%id%'
+  exists: '&#FF6B6B✘ Spawner &f%id% &#FF6B6Bđã tồn tại'
+  unknown: '&#FF6B6B✘ Không có spawner &f%id%'
+  toggled: '&#7CFC9A✔ Spawner &f%id% &#7CFC9Ađã %state%'
+  holo-toggled: '&#7CFC9A✔ Holo của spawner &f%id% &#7CFC9Ađã %state%'
+  list-header: '&#9AD0F5Spawner: &f%amount%'
+  list-line: '&7• &f%id% &8- &#BFC7D5đang sống &f%alive%/%max% &8(%state%&8)'
+  # %countdown% of the hologram in special states
+  paused: '&#FF8A8Ađang tạm dừng'
+  full: '&#FFD166đã đủ mob'
+  waiting: '&#BFC7D5chờ người chơi tới gần'
+
+altar:
+  created: '&#7CFC9A✔ Đã tạo bàn triệu hồi &f%id%&#7CFC9A, mở &f/mbm &#7CFC9Ađể đặt vật phẩm yêu cầu'
+  deleted: '&#7CFC9A✔ Đã xoá bàn triệu hồi &f%id%'
+  exists: '&#FF6B6B✘ Bàn &f%id% &#FF6B6Bđã tồn tại'
+  unknown: '&#FF6B6B✘ Không có bàn &f%id%'
+  look-at-block: '&#FF6B6B✘ Hãy nhìn vào block làm bàn triệu hồi (ví dụ &f%block%&#FF6B6B)'
+  block-used: '&#FF6B6B✘ Block này đã là bàn triệu hồi'
+  list-header: '&#F7A4C0Bàn triệu hồi: &f%amount%'
+  list-line: '&7• &f%id% &8- &#BFC7D5%mob% &8(%world% %x% %y% %z%)'
+  no-permission: '&#FF6B6B✘ Bạn không có quyền triệu hồi'
+  not-ready: '&#FFD166(!) Bàn triệu hồi này chưa được cài đặt xong'
+  busy: '&#FF6B6B✘ %mob% &#FF6B6Bđang xuất hiện, chưa thể triệu hồi thêm'
+  cooldown: '&#FF6B6B✘ Có thể triệu hồi lại sau &f%time%'
+  wrong-item: '&#FF6B6B✘ Cần cầm &f%item% &8x&f%amount% &#FF6B6Btrên tay để triệu hồi'
+  failed: '&#FF6B6B✘ Không triệu hồi được, hãy báo quản trị viên'
+  summoned: '&#7CFC9A✔ Bạn đã triệu hồi %mob%'
+  refunded: '&#FFD166(!) Boss đã rời đi, vật phẩm triệu hồi được trả lại cho bạn'
+  protected: '&#FF6B6B✘ Không thể phá bàn triệu hồi'
+
+reward:
+  item: '&#7CFC9A✔ Nhận &f%amount%x %item%'
+  money: '&#7CFC9A✔ Nhận &a%amount%$'
+  gem: '&#7CFC9A✔ Nhận &#8245F8%amount% %gem%'
+  failed: '&#FF6B6B✘ Một phần thưởng không cộng được, hãy báo quản trị viên'
+  top-rank: '&#FFD166Bạn đứng &fTop %rank% &#FFD166sát thương với %mob%'
+  top-missed: '&#BFC7D5Bạn đứng &fTop %rank% &#BFC7D5nhưng lần này không nhận được quà'
+  full-title: '&#FFD166Túi đồ đã đầy'
+  full-subtitle: '&#BFC7D5Phần thưởng còn lại đã rơi dưới chân bạn'
