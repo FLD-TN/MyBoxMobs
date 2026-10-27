@@ -162,7 +162,7 @@ public final class SpawnerService {
             Location at = spread(center, d.spread);
             String origin = "spawner:" + d.id;
             if (entry.mob.mythic()) {
-                plugin.mobs().spawnRawMythic(entry.mob.id(), at, origin);
+                plugin.mobs().spawnRawMythic(entry.mob.id(), at, origin, null);
                 continue;
             }
             MobDefinition def = plugin.registry().get(entry.mob.id());

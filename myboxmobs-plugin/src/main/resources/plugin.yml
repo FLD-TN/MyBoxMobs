@@ -5,7 +5,7 @@ api-version: '1.21'
 author: Dex
 description: Mob và boss tuỳ chỉnh của server BoxPvP (MythicMobs + ModelEngine)
 depend: [MythicMobs]
-softdepend: [ModelEngine, DecentHolograms, Vault, BoxCore, PlaceholderAPI, ItemsAdder]
+softdepend: [ModelEngine, DecentHolograms, Vault, BoxCore, BoxClans, PlaceholderAPI, ItemsAdder]
 commands:
   myboxmobs:
     description: Quản lý MyBoxMobs

@@ -103,7 +103,7 @@ public final class MobEditorMenu extends Menu {
         set(32, icon(Material.CHEST, Palette.REWARD + "Phần thưởng", Lore.of()
                 .desc("Thay hoàn toàn đồ rơi gốc của mob.")
                 .section("Thông tin:")
-                .row("Chế độ", def.rewardMode == MobDefinition.RewardMode.TOP ? "Top sát thương" : "Người hạ gục")
+                .row("Chế độ", def.rewardMode.label)
                 .row("Nhân thưởng theo rank", Palette.onOff(def.multiplierEnabled))
                 .action("Chuột trái để mở").build()), click -> new RewardMenu(plugin, player, def, this).open());
         set(34, icon(Material.BELL, Palette.ANNOUNCE + "Thông báo", Lore.of()

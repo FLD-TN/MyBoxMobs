@@ -29,6 +29,12 @@ public final class Lore {
         return this;
     }
 
+    /** A coloured note (warning, hint), wrapped like {@link #desc}. */
+    public Lore note(String color, String text) {
+        for (String part : wrap(text)) lines.add(color + part);
+        return this;
+    }
+
     public Lore section(String title) {
         if (!lines.isEmpty()) lines.add("");
         lines.add(SECTION + title);

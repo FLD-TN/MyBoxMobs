@@ -19,6 +19,11 @@ public final class LiveMob {
     /** {@code command}, {@code spawner:<id>} or {@code altar:<id>}. */
     public final String origin;
     public final @Nullable UUID summoner;
+    /**
+     * Clan boss of a clan altar: only this clan's members can damage it and its announcements go to that clan only.
+     * {@code null} for every other mob.
+     */
+    public @Nullable UUID ownerClan;
     public final long spawnedAt;
     /** Epoch millis, 0 = never. */
     public final long expiresAt;

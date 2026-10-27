@@ -265,7 +265,7 @@ public final class MbmCommand implements TabExecutor {
             return;
         }
         if (args.length < 3) {
-            m().send(sender, "command.usage", "usage", "/mbm altar <create|delete|list> <mã>");
+            m().send(sender, "command.usage", "usage", "/mbm altar <create|delete|list|givekey> <mã>");
             return;
         }
         AltarDef d = plugin.altars().get(args[2]);
@@ -276,9 +276,40 @@ public final class MbmCommand implements TabExecutor {
         if (sub.equals("delete")) {
             plugin.altars().delete(d);
             m().send(sender, "altar.deleted", "id", d.id);
+        } else if (sub.equals("givekey")) {
+            giveKey(sender, args, d);
         } else {
-            m().send(sender, "command.usage", "usage", "/mbm altar <create|delete|list> <mã>");
+            m().send(sender, "command.usage", "usage", "/mbm altar <create|delete|list|givekey> <mã>");
         }
+    }
+
+    /** {@code /mbm altar givekey <altar> <player> [amount]}: works from the console (shops). */
+    private void giveKey(CommandSender sender, String[] args, AltarDef d) {
+        if (args.length < 4) {
+            m().send(sender, "command.usage", "usage", "/mbm altar givekey <bàn> <người chơi> [số lượng]");
+            return;
+        }
+        Player target = Bukkit.getPlayerExact(args[3]);
+        if (target == null) {
+            m().send(sender, "command.player-offline", "player", args[3]);
+            return;
+        }
+        if (d.requirement == null) {
+            m().send(sender, "altar.no-key", "id", d.id);
+            return;
+        }
+        int amount = d.requirement.getAmount();
+        if (args.length >= 5) {
+            double v = Format.parse(args[4]);
+            if (Double.isNaN(v) || v < 1 || v > 2304) {
+                m().send(sender, "command.usage", "usage", "/mbm altar givekey <bàn> <người chơi> [1-2304]");
+                return;
+            }
+            amount = (int) v;
+        }
+        int given = plugin.altars().giveKey(d, target, amount);
+        m().send(sender, "altar.key-given", "amount", String.valueOf(given), "item",
+                com.dex.myboxmobs.util.ItemNames.of(d.requirement), "player", target.getName());
     }
 
     // ------------------------------------------------------------------ tab
@@ -293,7 +324,7 @@ public final class MbmCommand implements TabExecutor {
                 case "spawn", "kill" -> filter(plugin.registry().ids(), args[1]);
                 case "killall" -> filter(worlds(), args[1]);
                 case "spawner" -> filter(List.of("create", "delete", "list", "tp", "toggle", "holo"), args[1]);
-                case "altar" -> filter(List.of("create", "delete", "list"), args[1]);
+                case "altar" -> filter(List.of("create", "delete", "list", "givekey"), args[1]);
                 default -> List.of();
             };
         }
@@ -302,7 +333,7 @@ public final class MbmCommand implements TabExecutor {
                 case "kill" -> filter(worlds(), args[2]);
                 case "spawner" -> args[1].equalsIgnoreCase("create") ? List.of()
                         : filter(plugin.spawners().all().stream().map(d -> d.id).toList(), args[2]);
-                case "altar" -> args[1].equalsIgnoreCase("delete")
+                case "altar" -> args[1].equalsIgnoreCase("delete") || args[1].equalsIgnoreCase("givekey")
                         ? filter(plugin.altars().all().stream().map(d -> d.id).toList(), args[2]) : List.of();
                 default -> List.of();
             };
@@ -311,6 +342,9 @@ public final class MbmCommand implements TabExecutor {
             List<String> mobs = new ArrayList<>(plugin.registry().ids());
             for (String name : plugin.mythic().mobNames()) mobs.add("mythic:" + name);
             return filter(mobs, args[3]);
+        }
+        if (args.length == 4 && sub.equals("altar") && args[1].equalsIgnoreCase("givekey")) {
+            return filter(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList(), args[3]);
         }
         if (args.length == 4 && sub.equals("spawn") && sender instanceof Player) return List.of();
         if (args.length == 4 && sub.equals("spawn")) return filter(worlds(), args[3]);

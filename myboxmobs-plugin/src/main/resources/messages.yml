@@ -20,6 +20,7 @@ command:
   usage: '&#FFD166(!) Cách dùng: &f%usage%'
   bad-location: '&#FF6B6B✘ Vị trí không hợp lệ'
   unknown-world: '&#FF6B6B✘ Không có world &f%world%'
+  player-offline: '&#FF6B6B✘ Người chơi &f%player% &#FF6B6Bkhông online'
   help:
     - '&#E0BBE4MyBoxMobs &8- &#BFC7D5lệnh quản trị'
     - '&7• &f/mbm &8- &#BFC7D5mở GUI quản trị'
@@ -29,6 +30,7 @@ command:
     - '&7• &f/mbm list &8- &#BFC7D5mob đang sống (bấm để dịch chuyển)'
     - '&7• &f/mbm spawner <create|delete|list|tp|toggle|holo> [mã]'
     - '&7• &f/mbm altar <create|delete|list> [mã] [mob]'
+    - '&7• &f/mbm altar givekey <bàn> <người chơi> [số lượng] &8- &#BFC7D5đưa vật phẩm triệu hồi'
     - '&7• &f/mbm reload'
 
 list:
@@ -66,6 +68,9 @@ input:
   cooldown: '&#FFD166Nhập thời gian chờ (giây), &f0 &#FFD166là không chờ'
   skill-seconds: '&#FFD166Nhập số giây'
   schedule: '&#FFD166Nhập các giờ spawn, cách nhau bằng dấu cách, ví dụ &f12:00 20:30'
+  clan-min-share: '&#FFD166Nhập % sát thương tối thiểu trong bang để nhận quà thành viên (&f0 &#FFD166là ai đánh cũng nhận)'
+  clan-points: '&#FFD166Nhập số &#FFC94DDanh Vọng&#FFD166, &f0 &#FFD166là không có'
+  clan-currency: '&#FFD166Nhập số &#C77DFFMinh Huy&#FFD166, &f0 &#FFD166là không có'
 
 gui:
   select-slot-first: '&#FFD166(!) Hãy chọn một ô trang bị trước'
@@ -117,6 +122,16 @@ altar:
   failed: '&#FF6B6B✘ Không triệu hồi được, hãy báo quản trị viên'
   summoned: '&#7CFC9A✔ Bạn đã triệu hồi %mob%'
   protected: '&#FF6B6B✘ Không thể phá bàn triệu hồi'
+  # Bàn bang hội
+  clan-unavailable: '&#FF6B6B✘ Bàn bang hội đang không dùng được (thiếu BoxClans)'
+  clan-leader-only: '&#FF6B6B✘ Chỉ Minh Chủ mới được triệu hồi ở bàn bang hội'
+  # Gửi cho các thành viên đang online của bang. %player% %mob% %world% %x% %y% %z%
+  clan-summoned: '&#FFD166Minh Chủ &f%player% &#FFD166đã triệu hồi %mob% &#FFD166cho toàn bang hội, hãy tới tham gia nhanh nào! &8(%x% %y% %z%)'
+  no-key: '&#FF6B6B✘ Bàn &f%id% &#FF6B6Bchưa đặt vật phẩm yêu cầu'
+  key-given: '&#7CFC9A✔ Đã đưa &fx%amount% %item% &#7CFC9Acho &f%player%'
+
+clan:
+  not-member: '&#FF6B6B✘ Boss này thuộc về bang hội %clan%&#FF6B6B, chỉ thành viên mới đánh được'
 
 reward:
   item: '&#7CFC9A✔ Nhận &fx%amount% %item%'
@@ -125,5 +140,9 @@ reward:
   failed: '&#FF6B6B✘ Một phần thưởng không cộng được, hãy báo quản trị viên'
   top-rank: '&#FFD166Bạn đứng &fTop %rank% &#FFD166sát thương với %mob%'
   top-missed: '&#BFC7D5Bạn đứng &fTop %rank% &#BFC7D5nhưng lần này không nhận được quà'
+  # Gửi cho các thành viên đang online của bang được xếp hạng (Danh Vọng, Minh Huy do BoxClans thông báo)
+  clan-top-rank: '&#FFD166Bang hội của bạn đứng &fTop %rank% &#FFD166sát thương với %mob%'
+  clan-top-missed: '&#BFC7D5Bang hội của bạn đứng &fTop %rank% &#BFC7D5nhưng lần này không nhận được quà'
+  clan-shared: '&#FFD166Quà bang hội từ %mob%&#FFD166:'
   full-title: '&#FFD166Túi đồ đã đầy'
   full-subtitle: '&#BFC7D5Phần thưởng còn lại đã rơi dưới chân bạn'

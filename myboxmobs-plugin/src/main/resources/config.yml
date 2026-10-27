@@ -25,7 +25,7 @@ multiplier:
     gem: ''
 
 announce:
-  # A line that only contains %top% becomes the damage leaderboard (top damage mode only):
+  # A line that only contains %top% becomes the damage leaderboard (every reward mode but killer):
   # the header lines, then one top-line per rank. A line starting with <center> is centred in the chat.
   top-header:
     - ''
@@ -40,6 +40,15 @@ announce:
     - '&#E2E8F0'
     - '&#D97706'
   rank-color-others: '&7'
+  # How many ranks the boards show in the clan modes (top damage mode shows as many ranks as it has)
+  board-size: 5
+  # Clan board (clan top mode, needs BoxClans). %top% prints it right after the player board, unless the
+  # lines place it themselves with a %top_clans% line. %clan% clan name, %members% members who dealt damage
+  top-clan-header:
+    - ''
+    - '<center>&#FFD166Bảng xếp hạng bang hội'
+    - ''
+  top-clan-line: '<center>%color%%icon% %clan% &#64748B— &#94A3B8gây ra %color%%damage% &#94A3B8sát thương &8(%members% người)'
   # Lines given to a newly created mob (each mob then keeps its own copy, edit them in the GUI)
   default-lines:
     spawn:
@@ -78,6 +87,14 @@ hologram:
   altar-cooldown-lines:
     - '&#F7A4C0Triệu hồi %mob%'
     - '&#BFC7D5Có thể triệu hồi sau: &f%countdown%'
+
+# BoxClans: Danh Vọng goes through these points sources (add them to BoxClans points.yml > sources; their
+# caps and announce settings apply). Minh Huy needs no source.
+clans:
+  # Clan top ranks
+  points-source-top: mob-boss
+  # Killer's clan, every kill
+  points-source-kill: mob-kill
 
 altar:
   # Block suggested in messages; any block can be an altar

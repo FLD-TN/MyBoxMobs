@@ -2,12 +2,16 @@ package com.dex.myboxmobs.live;
 
 import com.dex.myboxmobs.config.Messages;
 import com.dex.myboxmobs.config.Settings;
+import com.dex.myboxmobs.hook.ClanSupport;
 import com.dex.myboxmobs.hook.Economy;
+import com.dex.myboxmobs.mob.ClanRank;
 import com.dex.myboxmobs.mob.MobDefinition;
 import com.dex.myboxmobs.mob.RewardEntry;
 import com.dex.myboxmobs.mob.TopRank;
 import com.dex.myboxmobs.text.Format;
+import com.dex.myboxmobs.text.Text;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,31 +23,51 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
-/** Pays the rewards of a killed mob (spec 5): killer mode or top damage mode, multipliers, straight to inventory. */
+/**
+ * Pays the rewards of a killed mob (spec 5): killer, top damage, clan top or shared clan gifts, multipliers,
+ * straight to inventory. Players offline at the death get nothing (owner decision).
+ */
 public final class RewardService {
+
+    /** A rolled reward line: the same result can be given to several players (shared clan gifts). */
+    private record Rolled(RewardEntry entry, long amount) {
+    }
 
     private final Supplier<Settings> settings;
     private final Messages messages;
     private final Economy economy;
     private final Function<MobDefinition, String> names;
+    private final Supplier<ClanSupport> clans;
     private final Logger log;
 
     public RewardService(Supplier<Settings> settings, Messages messages, Economy economy,
-                         Function<MobDefinition, String> names, Logger log) {
+                         Function<MobDefinition, String> names, Supplier<ClanSupport> clans, Logger log) {
         this.settings = settings;
         this.messages = messages;
         this.economy = economy;
         this.names = names;
+        this.clans = clans;
         this.log = log;
     }
 
-    public void pay(MobDefinition def, UUID killer, Map<UUID, Double> damage) {
-        if (def.rewardMode == MobDefinition.RewardMode.KILLER) {
-            Player p = killer == null ? null : Bukkit.getPlayer(killer);
-            if (p != null) give(p, def, def.killerRewards);
-            return;
+    /** {@code clanBoard}: clans by damage in clan top mode, else null. */
+    public void pay(MobDefinition def, @Nullable UUID killer, Map<UUID, Double> damage, @Nullable UUID ownerClan,
+                    @Nullable List<ClanDamage.Entry> clanBoard) {
+        if (def.rewardMode != MobDefinition.RewardMode.CLAN_SHARED) killerClanPoints(def, killer);
+        switch (def.rewardMode) {
+            case KILLER -> {
+                Player p = killer == null ? null : Bukkit.getPlayer(killer);
+                if (p != null) give(p, def, roll(def.killerRewards));
+            }
+            case TOP -> payTop(def, damage);
+            case TOP_CLAN -> payClanTop(def, clanBoard == null ? List.of() : clanBoard);
+            case CLAN_SHARED -> payShared(def, damage, ownerClan);
         }
+    }
+
+    private void payTop(MobDefinition def, Map<UUID, Double> damage) {
         int rank = 0;
         for (UUID uuid : damage.keySet()) {
             if (rank >= def.topRanks.size()) break;
@@ -56,17 +80,88 @@ public final class RewardService {
                 continue;
             }
             messages.send(p, "reward.top-rank", "rank", String.valueOf(rank), "mob", names.apply(def));
-            give(p, def, r.rewards);
+            give(p, def, roll(r.rewards));
         }
     }
 
-    private void give(Player p, MobDefinition def, List<RewardEntry> entries) {
-        Settings s = settings.get();
-        boolean overflow = false;
+    /**
+     * Clan top: each ranked clan gets its Danh Vọng and Minh Huy (BoxClans tells the clan about both), its online
+     * members are told their rank, and members who dealt at least the minimum share get the member gifts.
+     */
+    private void payClanTop(MobDefinition def, List<ClanDamage.Entry> board) {
+        ClanSupport c = clans.get();
+        if (!c.available()) return;
+        String mob = names.apply(def);
+        int rank = 0;
+        for (ClanDamage.Entry e : board) {
+            if (rank >= def.clanRanks.size()) break;
+            ClanRank r = def.clanRanks.get(rank++);
+            String rankText = String.valueOf(rank);
+            List<Player> online = c.onlineMembers(e.clan().uuid());
+            if (!roll(r.chance)) {
+                for (Player p : online) messages.send(p, "reward.clan-top-missed", "rank", rankText, "mob", mob);
+                continue;
+            }
+            for (Player p : online) messages.send(p, "reward.clan-top-rank", "rank", rankText, "mob", mob);
+            c.awardPoints(e.clan().uuid(), settings.get().clanSourceTop, r.danhVong);
+            if (r.minhHuy > 0 && !c.giveCurrency(e.clan().uuid(), r.minhHuy, "Top " + rank + " " + Text.plain(mob))) {
+                log.warning("Minh Huy reward of " + r.minhHuy + " for clan " + e.clan().uuid() + " failed");
+            }
+            for (UUID member : e.members().keySet()) {
+                Player p = Bukkit.getPlayer(member);
+                if (p == null || e.share(member) < def.clanMinShare) continue;
+                give(p, def, roll(r.rewards));
+            }
+        }
+    }
+
+    /**
+     * Shared clan gifts: rolled once, every recipient gets the same lines. Recipients are the online players who
+     * dealt damage, or every online member of the boss's clan; a boss without a clan always uses the first.
+     */
+    private void payShared(MobDefinition def, Map<UUID, Double> damage, @Nullable UUID ownerClan) {
+        List<Player> to = new ArrayList<>();
+        ClanSupport c = clans.get();
+        if (ownerClan != null && def.sharedRecipients == MobDefinition.SharedRecipients.ONLINE && c.clan(ownerClan) != null) {
+            to.addAll(c.onlineMembers(ownerClan));
+        } else {
+            for (UUID uuid : damage.keySet()) {
+                Player p = Bukkit.getPlayer(uuid);
+                if (p != null) to.add(p);
+            }
+        }
+        List<Rolled> rolled = roll(def.sharedRewards);
+        String mob = names.apply(def);
+        for (Player p : to) {
+            messages.send(p, "reward.clan-shared", "mob", mob);
+            give(p, def, rolled);
+        }
+    }
+
+    /** Danh Vọng for the killer's clan (BoxClans tells the clan). */
+    private void killerClanPoints(MobDefinition def, @Nullable UUID killer) {
+        if (def.killerClanPoints <= 0 || killer == null) return;
+        ClanSupport c = clans.get();
+        ClanSupport.ClanInfo clan = c.clanOf(killer);
+        if (clan != null) c.awardPoints(clan.uuid(), settings.get().clanSourceKill, def.killerClanPoints);
+    }
+
+    private static List<Rolled> roll(List<RewardEntry> entries) {
+        List<Rolled> out = new ArrayList<>();
         for (RewardEntry e : entries) {
             if (!roll(e.chance)) continue;
             long amount = e.kind == RewardEntry.Kind.COMMAND ? 1 : random(e.min, e.max);
-            if (amount <= 0) continue;
+            if (amount > 0) out.add(new Rolled(e, amount));
+        }
+        return out;
+    }
+
+    private void give(Player p, MobDefinition def, List<Rolled> rolled) {
+        Settings s = settings.get();
+        boolean overflow = false;
+        for (Rolled r : rolled) {
+            RewardEntry e = r.entry();
+            long amount = r.amount();
             switch (e.kind) {
                 case ITEM -> {
                     if (e.item == null) continue;

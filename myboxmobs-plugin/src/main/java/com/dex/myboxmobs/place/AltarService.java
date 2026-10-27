@@ -2,6 +2,7 @@ package com.dex.myboxmobs.place;
 
 import com.dex.myboxmobs.MyBoxMobsPlugin;
 import com.dex.myboxmobs.config.Messages;
+import com.dex.myboxmobs.hook.ClanSupport;
 import com.dex.myboxmobs.live.LiveMob;
 import com.dex.myboxmobs.live.MobService;
 import com.dex.myboxmobs.mob.MobDefinition;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -111,6 +113,20 @@ public final class AltarService implements MobService.EndListener {
             m.send(p, "altar.not-ready");
             return;
         }
+        UUID ownerClan = null;
+        if (d.clan) {
+            ClanSupport clans = plugin.clans();
+            ClanSupport.ClanInfo own = clans.clanOf(p.getUniqueId());
+            if (!clans.available()) {
+                m.send(p, "altar.clan-unavailable");
+                return;
+            }
+            if (own == null || !clans.isLeader(p.getUniqueId())) {
+                m.send(p, "altar.clan-leader-only");
+                return;
+            }
+            ownerClan = own.uuid();
+        }
         if (d.boss != null) {
             m.send(p, "altar.busy", "mob", plugin.spawners().mobName(d.mob));
             return;
@@ -130,7 +146,7 @@ public final class AltarService implements MobService.EndListener {
         Location loc = d.blockLocation();
         if (loc == null) return;
         Location spawnAt = loc.clone().add(0.5, 1, 0.5);
-        LiveMob boss = spawn(d, spawnAt, p);
+        LiveMob boss = spawn(d, spawnAt, p, ownerClan);
         if (boss == null) {
             m.send(p, "altar.failed");
             return;
@@ -144,15 +160,43 @@ public final class AltarService implements MobService.EndListener {
         d.bossZ = spawnAt.getBlockZ();
         save();
         plugin.holograms().remove(HOLO + d.id);
-        m.send(p, "altar.summoned", "mob", plugin.spawners().mobName(d.mob));
+        String mob = plugin.spawners().mobName(d.mob);
+        if (ownerClan == null) {
+            m.send(p, "altar.summoned", "mob", mob);
+            return;
+        }
+        for (Player member : plugin.clans().onlineMembers(ownerClan)) {
+            m.send(member, "altar.clan-summoned", "player", p.getName(), "mob", mob, "world", spawnAt.getWorld().getName(),
+                    "x", String.valueOf(spawnAt.getBlockX()), "y", String.valueOf(spawnAt.getBlockY()),
+                    "z", String.valueOf(spawnAt.getBlockZ()));
+        }
     }
 
-    private @Nullable LiveMob spawn(AltarDef d, Location at, Player summoner) {
+    private @Nullable LiveMob spawn(AltarDef d, Location at, Player summoner, @Nullable UUID ownerClan) {
         String origin = "altar:" + d.id;
-        if (d.mob.mythic()) return plugin.mobs().spawnRawMythic(d.mob.id(), at, origin);
+        if (d.mob.mythic()) return plugin.mobs().spawnRawMythic(d.mob.id(), at, origin, ownerClan);
         MobDefinition def = plugin.registry().get(d.mob.id());
         if (def == null) return null;
-        return plugin.mobs().spawn(def, at, origin, summoner.getUniqueId(), true);
+        return plugin.mobs().spawn(def, at, origin, summoner.getUniqueId(), ownerClan, true);
+    }
+
+    /**
+     * {@code /mbm altar givekey}: the altar's summoning item (e.g. bought in the Minh Huy shop). {@code amount} items,
+     * the overflow drops at the player's feet. Returns the number given, 0 when the altar has no requirement.
+     */
+    public int giveKey(AltarDef d, Player to, int amount) {
+        if (d.requirement == null || amount <= 0) return 0;
+        int max = Math.max(1, d.requirement.getMaxStackSize());
+        int left = amount;
+        while (left > 0) {
+            ItemStack stack = d.requirement.clone();
+            stack.setAmount(Math.min(left, max));
+            left -= stack.getAmount();
+            for (ItemStack rest : to.getInventory().addItem(stack).values()) {
+                to.getWorld().dropItemNaturally(to.getLocation(), rest);
+            }
+        }
+        return amount;
     }
 
     /**

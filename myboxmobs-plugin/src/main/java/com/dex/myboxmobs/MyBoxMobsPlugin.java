@@ -7,6 +7,8 @@ import com.dex.myboxmobs.config.Messages;
 import com.dex.myboxmobs.config.Settings;
 import com.dex.myboxmobs.gui.ChatInput;
 import com.dex.myboxmobs.gui.GuiListener;
+import com.dex.myboxmobs.hook.BoxClansSupport;
+import com.dex.myboxmobs.hook.ClanSupport;
 import com.dex.myboxmobs.hook.DecentHolograms;
 import com.dex.myboxmobs.hook.Economy;
 import com.dex.myboxmobs.hook.EconomyHooks;
@@ -17,6 +19,7 @@ import com.dex.myboxmobs.hook.ModelSupport;
 import com.dex.myboxmobs.hook.MythicHook;
 import com.dex.myboxmobs.hook.PapiHook;
 import com.dex.myboxmobs.live.Announcer;
+import com.dex.myboxmobs.live.ClanBossListener;
 import com.dex.myboxmobs.live.KillStats;
 import com.dex.myboxmobs.live.MobListener;
 import com.dex.myboxmobs.live.MobService;
@@ -46,6 +49,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
     private MythicHook mythic;
     private ModelSupport models = ModelSupport.NONE;
     private Holograms holograms = Holograms.NONE;
+    private ClanSupport clans = ClanSupport.NONE;
     private Economy economy;
     private ItemsAdderHook itemsAdder;
     private MobRegistry registry;
@@ -70,6 +74,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         mythic = new MythicHook();
         if (pm.isPluginEnabled("ModelEngine")) models = new MegModelSupport(getLogger());
         if (pm.isPluginEnabled("DecentHolograms")) holograms = new DecentHolograms(getLogger());
+        if (pm.isPluginEnabled("BoxClans")) clans = new BoxClansSupport(getLogger());
         economy = new EconomyHooks();
         itemsAdder = ItemsAdderHook.create(this);
         if (pm.isPluginEnabled("PlaceholderAPI")) {
@@ -82,8 +87,8 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         kills = new KillStats(getDataFolder(), getLogger());
         kills.open();
         mobs = new MobService(this);
-        announcer = new Announcer(() -> settings, mobs::displayName);
-        rewards = new RewardService(() -> settings, messages, economy, mobs::displayName, getLogger());
+        announcer = new Announcer(() -> settings, mobs::displayName, () -> clans);
+        rewards = new RewardService(() -> settings, messages, economy, mobs::displayName, () -> clans, getLogger());
         spawners = new SpawnerService(this);
         spawners.load();
         altars = new AltarService(this);
@@ -93,6 +98,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
 
         pm.registerEvents(new MobListener(this, mobs), this);
         pm.registerEvents(new AltarListener(altars, messages), this);
+        pm.registerEvents(new ClanBossListener(this), this);
         pm.registerEvents(new GuiListener(this), this);
         pm.registerEvents(input, this);
         PluginCommand command = getCommand("myboxmobs");
@@ -112,7 +118,8 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
             altars.tick();
         }, 20L, 20L);
         getLogger().info("ModelEngine " + (models.available() ? "found" : "not found")
-                + ", DecentHolograms " + (holograms.available() ? "found" : "not found"));
+                + ", DecentHolograms " + (holograms.available() ? "found" : "not found")
+                + ", BoxClans " + (clans != ClanSupport.NONE ? "found" : "not found"));
     }
 
     @Override
@@ -168,6 +175,11 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
 
     public Holograms holograms() {
         return holograms;
+    }
+
+    /** BoxClans, or {@link ClanSupport#NONE} when it is not installed. */
+    public ClanSupport clans() {
+        return clans;
     }
 
     public Economy economy() {

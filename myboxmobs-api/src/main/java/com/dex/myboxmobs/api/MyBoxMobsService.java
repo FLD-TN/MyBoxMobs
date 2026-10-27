@@ -29,4 +29,10 @@ public interface MyBoxMobsService {
 
     /** Live damage per player (capped at the mob's remaining health), highest first. Empty when not managed. */
     Map<UUID, Double> damageOf(Entity entity);
+
+    /**
+     * BoxClans clan that owns a boss summoned at a clan altar (only its members can damage it); empty for every
+     * other mob. Since 0.7.0.
+     */
+    Optional<UUID> ownerClanOf(Entity entity);
 }

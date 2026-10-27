@@ -1,5 +1,31 @@
 # MyBoxMobs changelog
 
+## 0.7.0 (2026-10-27)
+
+BoxClans integration (optional: everything clan-related is hidden or inactive without BoxClans 1.4+).
+
+- New reward mode "Top bang hội": player damage summed per clan. Each clan rank has a chance, Danh Vọng (points
+  source `mob-boss`) and Minh Huy for the clan, and member gifts for every member of that clan who dealt damage,
+  is online and dealt at least the minimum share of the clan's damage (default 0%). Online members of a ranked clan
+  are told their rank; BoxClans announces the Danh Vọng and Minh Huy itself.
+- New reward mode "Quà bang hội" for clan altar bosses: no Danh Vọng or Minh Huy, one gift list rolled once and
+  given equally to the members who dealt damage and are online (or every online member, per mob).
+- Danh Vọng for the killer's clan on every kill, per mob (points source `mob-kill`, 0 = off; not in "Quà bang hội").
+- Clan altar ("Bàn bang hội", altar editor): only a Minh Chủ can summon; the boss belongs to that clan, only its
+  members can damage it (the boss still attacks everyone); its announcements and the summon message
+  ("Minh Chủ X đã triệu hồi ... cho toàn bang hội") go to that clan only. One boss per altar, cooldown as before,
+  a despawn gives nothing.
+- `/mbm altar givekey <altar> <player> [amount]` gives the altar's summoning item (for the Minh Huy shop).
+- Death announcement: `%top%` shows the player board in every mode but killer; in "Top bang hội" it is followed by
+  the clan board, or the lines place it with `%top_clans%`. New config keys `announce.board-size`,
+  `announce.top-clan-header`, `announce.top-clan-line`, `clans.points-source-top/kill` (defaults built in, old
+  config.yml files keep working unchanged: no config-version bump).
+- Reward GUI follows the mode: only the settings of the current mode are shown, switching to a mode with an empty
+  setup fills its defaults (top: 3 ranks 100/70/50%; top clan: 3 ranks 50/30/15 Danh Vọng, 200/100/50 Minh Huy).
+- API: `MyBoxMobsService.ownerClanOf(entity)`.
+- BoxClans points.yml (default) gets the sources `mob-boss` and `mob-kill`; servers must add them to their own
+  points.yml.
+
 ## 0.6.1 (2026-10-27)
 
 - The damage table (and the last hitter) of a managed mob is saved in the mob itself when its chunk unloads or the

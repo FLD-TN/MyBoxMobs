@@ -47,4 +47,10 @@ final class ServiceImpl implements MyBoxMobsService {
         LiveMob mob = entity == null ? null : plugin.mobs().tracker().get(entity.getUniqueId());
         return mob == null ? Map.of() : java.util.Collections.unmodifiableMap(mob.sortedDamage());
     }
+
+    @Override
+    public Optional<UUID> ownerClanOf(Entity entity) {
+        LiveMob mob = entity == null ? null : plugin.mobs().tracker().get(entity.getUniqueId());
+        return mob == null ? Optional.empty() : Optional.ofNullable(mob.ownerClan);
+    }
 }

@@ -22,7 +22,27 @@ public final class MobDefinition {
 
     public enum ModelMode { ONLY_IF_NONE, REPLACE }
 
-    public enum RewardMode { KILLER, TOP }
+    /** Reward modes; the clan modes need BoxClans. */
+    public enum RewardMode {
+        KILLER("Người hạ gục", false), TOP("Top sát thương", false),
+        TOP_CLAN("Top bang hội", true), CLAN_SHARED("Quà bang hội", true);
+
+        public final String label;
+        public final boolean clan;
+
+        RewardMode(String label, boolean clan) {
+            this.label = label;
+            this.clan = clan;
+        }
+
+        /** Shows the player damage board ({@code %top%}). */
+        public boolean playerBoard() {
+            return this != KILLER;
+        }
+    }
+
+    /** Who receives the gifts of {@link RewardMode#CLAN_SHARED}. */
+    public enum SharedRecipients { PARTICIPANTS, ONLINE }
 
     /** Stats overrides; {@code null} keeps the original value. */
     public enum Stat {
@@ -63,6 +83,13 @@ public final class MobDefinition {
     public boolean multiplierEnabled = true;
     public final List<RewardEntry> killerRewards = new ArrayList<>();
     public final List<TopRank> topRanks = new ArrayList<>();
+    public final List<ClanRank> clanRanks = new ArrayList<>();
+    /** Clan top: smallest share (%) of the clan's damage a member needs for the member gifts. */
+    public double clanMinShare;
+    /** Danh Vọng for the killer's clan on every kill (0 = off; not used by the shared clan mode). */
+    public long killerClanPoints;
+    public final List<RewardEntry> sharedRewards = new ArrayList<>();
+    public SharedRecipients sharedRecipients = SharedRecipients.PARTICIPANTS;
     public final List<SkillEntry> skills = new ArrayList<>();
     /** Hologram of the spawners that spawn this mob (one template per mob, default from config.yml). */
     public final List<String> spawnerHolo = new ArrayList<>();
@@ -105,6 +132,15 @@ public final class MobDefinition {
         List<Map<String, Object>> top = new ArrayList<>();
         for (TopRank r : topRanks) top.add(r.serialize());
         y.set("rewards.top", top);
+        List<Map<String, Object>> clanTop = new ArrayList<>();
+        for (ClanRank r : clanRanks) clanTop.add(r.serialize());
+        y.set("rewards.clan-top", clanTop);
+        y.set("rewards.clan-min-share", clanMinShare);
+        y.set("rewards.killer-clan-points", killerClanPoints);
+        List<Map<String, Object>> shared = new ArrayList<>();
+        for (RewardEntry e : sharedRewards) shared.add(e.serialize());
+        y.set("rewards.clan-shared", shared);
+        y.set("rewards.clan-shared-recipients", sharedRecipients.name());
         List<Map<String, Object>> skillList = new ArrayList<>();
         for (SkillEntry e : skills) skillList.add(e.serialize());
         y.set("skills", skillList);
@@ -113,6 +149,35 @@ public final class MobDefinition {
         writeAnnouncement(y, "death", death);
         writeAnnouncement(y, "despawn", despawn);
         return y;
+    }
+
+    /**
+     * Switches the reward mode. A mode whose setup is still empty gets a starting setup (owner request: every mode
+     * comes with its own defaults); what was set up before is kept.
+     */
+    public void switchMode(RewardMode mode) {
+        rewardMode = mode;
+        switch (mode) {
+            case TOP -> {
+                if (topRanks.isEmpty()) {
+                    for (double chance : new double[]{100, 70, 50}) {
+                        TopRank r = new TopRank();
+                        r.chance = chance;
+                        topRanks.add(r);
+                    }
+                }
+            }
+            case TOP_CLAN -> {
+                if (clanRanks.isEmpty()) {
+                    clanRanks.add(new ClanRank(50, 200));
+                    clanRanks.add(new ClanRank(30, 100));
+                    clanRanks.add(new ClanRank(15, 50));
+                }
+            }
+            default -> {
+                // killer and shared clan gifts start as an empty list
+            }
+        }
     }
 
     private static void writeAnnouncement(YamlConfiguration y, String key, Announcement a) {
@@ -166,6 +231,19 @@ public final class MobDefinition {
             if (e != null) d.killerRewards.add(e);
         }
         for (Map<?, ?> m : y.getMapList("rewards.top")) d.topRanks.add(TopRank.deserialize(m));
+        for (Map<?, ?> m : y.getMapList("rewards.clan-top")) d.clanRanks.add(ClanRank.deserialize(m));
+        d.clanMinShare = Math.max(0, Math.min(100, y.getDouble("rewards.clan-min-share", 0)));
+        d.killerClanPoints = Math.max(0, y.getLong("rewards.killer-clan-points", 0));
+        for (Map<?, ?> m : y.getMapList("rewards.clan-shared")) {
+            RewardEntry e = RewardEntry.deserialize(m);
+            if (e != null) d.sharedRewards.add(e);
+        }
+        try {
+            d.sharedRecipients = SharedRecipients.valueOf(
+                    y.getString("rewards.clan-shared-recipients", "PARTICIPANTS").toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            d.sharedRecipients = SharedRecipients.PARTICIPANTS;
+        }
         for (Map<?, ?> m : y.getMapList("skills")) {
             SkillEntry e = SkillEntry.deserialize(m);
             if (e != null) d.skills.add(e);

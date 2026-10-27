@@ -44,6 +44,7 @@ public final class MobService {
     private final NamespacedKey summonerKey;
     private final NamespacedKey damageKey;
     private final NamespacedKey lastHitKey;
+    private final NamespacedKey clanKey;
     private final List<EndListener> endListeners = new ArrayList<>();
 
     public MobService(MyBoxMobsPlugin plugin) {
@@ -54,6 +55,7 @@ public final class MobService {
         this.summonerKey = new NamespacedKey(plugin, "summoner");
         this.damageKey = new NamespacedKey(plugin, "damage");
         this.lastHitKey = new NamespacedKey(plugin, "lasthit");
+        this.clanKey = new NamespacedKey(plugin, "clan");
     }
 
     public Tracker tracker() {
@@ -80,6 +82,12 @@ public final class MobService {
      */
     public @Nullable LiveMob spawn(MobDefinition def, Location at, String origin, @Nullable UUID summoner,
                                    boolean announce) {
+        return spawn(def, at, origin, summoner, null, announce);
+    }
+
+    /** {@code ownerClan}: the boss of a clan altar belongs to that clan (see {@link LiveMob#ownerClan}). */
+    public @Nullable LiveMob spawn(MobDefinition def, Location at, String origin, @Nullable UUID summoner,
+                                   @Nullable UUID ownerClan, boolean announce) {
         if (at.getWorld() == null) return null;
         Entity entity;
         if (def.source == MobDefinition.Source.MYTHIC) {
@@ -88,17 +96,18 @@ public final class MobService {
                 return null;
             }
             entity = plugin.mythic().spawn(def.mythicId, at);
-            if (entity != null) tag(entity, def.id, origin, summoner);
+            if (entity != null) tag(entity, def.id, origin, summoner, ownerClan);
         } else {
             EntityType type = def.entityType;
             if (!type.isSpawnable() || !type.isAlive()) return null;
             entity = at.getWorld().spawnEntity(at, type, CreatureSpawnEvent.SpawnReason.CUSTOM,
-                    e -> tag(e, def.id, origin, summoner));
+                    e -> tag(e, def.id, origin, summoner, ownerClan));
         }
         if (entity == null) return null;
         apply(def, entity);
         observe(def.id, entity);
         LiveMob live = new LiveMob(entity, def, def.id, origin, summoner, System.currentTimeMillis());
+        live.ownerClan = ownerClan;
         tracker.add(live);
         MbmMobSpawnEvent event = new MbmMobSpawnEvent(entity, def.id, origin, summoner);
         Bukkit.getPluginManager().callEvent(event);
@@ -109,7 +118,7 @@ public final class MobService {
             return null;
         }
         attachModel(def, entity);
-        if (announce) plugin.announcer().spawn(def, entity.getLocation(), summoner);
+        if (announce) plugin.announcer().spawn(def, entity.getLocation(), summoner, ownerClan);
         long now = System.currentTimeMillis();
         for (SkillEntry e : def.skills) if (e.trigger == SkillEntry.Trigger.TIMER) live.lastCast.put(e, now);
         // after MythicMobs' own spawn skills and the model
@@ -193,14 +202,15 @@ public final class MobService {
     }
 
     /** A raw MythicMobs mob of a spawner: tracked for max-alive and leash only (spec 7). */
-    public @Nullable LiveMob spawnRawMythic(String mythicId, Location at, String origin) {
+    public @Nullable LiveMob spawnRawMythic(String mythicId, Location at, String origin, @Nullable UUID ownerClan) {
         if (!plugin.mythic().exists(mythicId)) return null;
         Entity entity = plugin.mythic().spawn(mythicId, at);
         if (entity == null) return null;
-        tag(entity, null, origin, null);
+        tag(entity, null, origin, null, ownerClan);
         entity.getPersistentDataContainer().set(new NamespacedKey(plugin, "mythic"), PersistentDataType.STRING, mythicId);
         observe("mythic:" + mythicId, entity);
         LiveMob live = new LiveMob(entity, null, "mythic:" + mythicId, origin, null, System.currentTimeMillis());
+        live.ownerClan = ownerClan;
         tracker.add(live);
         return live;
     }
@@ -223,12 +233,13 @@ public final class MobService {
      * Tags a spawned mob. The tags are saved with the entity: managed mobs survive chunk unloads and restarts
      * like vanilla mobs and are adopted again when their chunk loads ({@link #adopt}).
      */
-    private void tag(Entity e, @Nullable String defId, String origin, @Nullable UUID summoner) {
+    private void tag(Entity e, @Nullable String defId, String origin, @Nullable UUID summoner, @Nullable UUID ownerClan) {
         PersistentDataContainer pdc = e.getPersistentDataContainer();
         if (defId != null) pdc.set(defKey, PersistentDataType.STRING, defId);
         pdc.set(originKey, PersistentDataType.STRING, origin);
         pdc.set(spawnedKey, PersistentDataType.LONG, System.currentTimeMillis());
         if (summoner != null) pdc.set(summonerKey, PersistentDataType.STRING, summoner.toString());
+        if (ownerClan != null) pdc.set(clanKey, PersistentDataType.STRING, ownerClan.toString());
         e.setPersistent(true);
         if (e instanceof LivingEntity le) le.setRemoveWhenFarAway(false);
     }
@@ -315,8 +326,10 @@ public final class MobService {
             MbmMobDeathEvent event = new MbmMobDeathEvent(mob.entity, def.id, killer, damage);
             Bukkit.getPluginManager().callEvent(event);
             if (killer != null) plugin.kills().addKill(killer, def.id);
-            if (!event.isRewardsCancelled()) plugin.rewards().pay(def, killer, damage);
-            plugin.announcer().death(def, killer, damage);
+            List<ClanDamage.Entry> clanBoard = def.rewardMode == MobDefinition.RewardMode.TOP_CLAN
+                    ? ClanDamage.of(damage, plugin.clans()::clanOf) : null;
+            if (!event.isRewardsCancelled()) plugin.rewards().pay(def, killer, damage, mob.ownerClan, clanBoard);
+            plugin.announcer().death(def, killer, damage, mob.ownerClan, clanBoard);
         }
         for (EndListener l : endListeners) l.onEnd(mob, true);
     }
@@ -327,7 +340,7 @@ public final class MobService {
         mob.ended = true;
         tracker.remove(mob.uuid());
         Bukkit.getPluginManager().callEvent(new MbmMobDespawnEvent(mob.entity, mob.id, reason));
-        if (reason == MbmMobDespawnEvent.Reason.LIFETIME && mob.def != null) plugin.announcer().despawn(mob.def);
+        if (reason == MbmMobDespawnEvent.Reason.LIFETIME && mob.def != null) plugin.announcer().despawn(mob.def, mob.ownerClan);
         if (mob.entity.isValid()) mob.entity.remove();
         for (EndListener l : endListeners) l.onEnd(mob, false);
     }
@@ -394,6 +407,7 @@ public final class MobService {
                 for (SkillEntry s : def.skills) if (s.trigger == SkillEntry.Trigger.TIMER) live.lastCast.put(s, now);
                 if (def.source == MobDefinition.Source.CUSTOM) attachModel(def, e);
             }
+            live.ownerClan = uuidOrNull(pdc.get(clanKey, PersistentDataType.STRING));
             tracker.add(live);
             n++;
         }

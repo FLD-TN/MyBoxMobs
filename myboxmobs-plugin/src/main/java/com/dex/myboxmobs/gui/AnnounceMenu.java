@@ -25,7 +25,8 @@ public final class AnnounceMenu extends Menu {
                 List.of("%mob% tên mob", "%world% %x% %y% %z% vị trí", "%summoner% người triệu hồi (bàn triệu hồi)"));
         entry(13, Material.RED_BANNER, "Khi bị hạ gục", def.death,
                 List.of("%mob% tên mob", "%killer% người hạ gục", "%killer_damage% sát thương của họ",
-                        "%top% (một dòng riêng) bảng top, chỉ ở chế độ top"));
+                        "%top% (một dòng riêng) bảng top, mọi chế độ trừ người hạ gục",
+                        "%top_clans% (một dòng riêng) bảng bang hội, chế độ top bang hội; không có thì nằm ngay sau %top%"));
         entry(15, Material.GRAY_BANNER, "Khi biến mất", def.despawn, List.of("%mob% tên mob"));
         set(22, icon(Material.ARROW, "&#BFC7D5Quay lại", Lore.of().action("Chuột trái để quay lại").build()),
                 click -> parent.open());

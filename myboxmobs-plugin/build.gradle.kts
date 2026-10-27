@@ -16,6 +16,7 @@ dependencies {
     compileOnly(files("../libs/ModelEngine-R4.1.1.jar"))
     compileOnly(files("../libs/DecentHolograms-2.10.1.jar"))
     compileOnly(files("../libs/boxcore-api-1.3.0.jar"))
+    compileOnly(files("../libs/boxclans-api-1.4.4.jar"))
 
     testImplementation(paperApi)
     testImplementation(platform("org.junit:junit-bom:5.11.4"))

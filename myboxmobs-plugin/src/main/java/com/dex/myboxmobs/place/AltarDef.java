@@ -24,6 +24,11 @@ public final class AltarDef {
     /** Exact item (full NBT) and amount the player must hold; {@code null} = not set, the altar cannot be used. */
     public @Nullable ItemStack requirement;
     public int cooldownSeconds;
+    /**
+     * Clan altar (BoxClans): only a Minh Chủ can summon, the boss belongs to their clan (only members can damage
+     * it) and its announcements go to that clan only.
+     */
+    public boolean clan;
     public final List<String> holoLines = new ArrayList<>();
     /** Epoch millis; saved so a restart keeps the cooldown. */
     public long cooldownUntil;
@@ -69,6 +74,7 @@ public final class AltarDef {
         s.set("mob", mob == null ? "" : mob.toString());
         s.set("requirement", requirement == null ? "" : ItemCodec.encode(requirement));
         s.set("cooldown-seconds", cooldownSeconds);
+        s.set("clan-altar", clan);
         s.set("hologram-lines", holoLines);
         s.set("cooldown-until", cooldownUntil);
         s.set("boss", boss == null ? null : boss.toString());
@@ -95,6 +101,7 @@ public final class AltarDef {
         d.mob = MobRef.parse(s.getString("mob", ""));
         d.requirement = ItemCodec.decode(s.getString("requirement", ""));
         d.cooldownSeconds = Math.max(0, s.getInt("cooldown-seconds", 0));
+        d.clan = s.getBoolean("clan-altar", false);
         d.holoLines.addAll(s.getStringList("hologram-lines"));
         d.cooldownUntil = s.getLong("cooldown-until", 0);
         d.boss = uuid(s.getString("boss"));

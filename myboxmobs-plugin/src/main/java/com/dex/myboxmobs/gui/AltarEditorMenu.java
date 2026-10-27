@@ -87,6 +87,23 @@ public final class AltarEditorMenu extends Menu {
                 plugin.altars().save();
             });
         });
+        if (plugin.clans().available() || d.clan) {
+            Lore clanLore = Lore.of()
+                    .desc("Chỉ Minh Chủ được triệu hồi. Boss thuộc về bang hội đó: chỉ thành viên mới đánh được, boss vẫn đánh mọi người. Thông báo chỉ gửi trong bang.")
+                    .section("Thông tin:").row("Hiện tại", Palette.onOff(d.clan));
+            if (!plugin.clans().available()) clanLore.note("&#FF6B6B", "✘ Chưa cài BoxClans, bàn đang không dùng được");
+            if (d.clan && d.mob != null && !d.mob.mythic()) {
+                var def = plugin.registry().get(d.mob.id());
+                if (def != null && def.rewardMode != com.dex.myboxmobs.mob.MobDefinition.RewardMode.CLAN_SHARED) {
+                    clanLore.note("&#FFD166", "(!) Mob đang ở chế độ " + def.rewardMode.label + ", nên đổi sang Quà bang hội");
+                }
+            }
+            set(14, icon(d.clan ? Material.WHITE_BANNER : Material.GRAY_BANNER, Palette.CLAN + "Bàn bang hội",
+                    clanLore.action("Chuột trái để bật/tắt").build()), click -> {
+                d.clan = !d.clan;
+                changed();
+            });
+        }
         set(15, icon(Material.NAME_TAG, Palette.ALTAR + "Hologram", Lore.of()
                 .section("Thông tin:").row("Số dòng", String.valueOf(d.holoLines.size()))
                 .row("DecentHolograms", plugin.holograms().available() ? "có" : "&#FF6B6Bchưa cài")

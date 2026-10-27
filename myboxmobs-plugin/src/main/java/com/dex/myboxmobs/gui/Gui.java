@@ -77,8 +77,7 @@ public final class Gui {
         Material material = mythic ? Palette.egg(plugin.mythic().entityType(def.mythicId)) : Palette.egg(def.entityType);
         Lore lore = Lore.of().section("Thông tin:").row("Mã", def.id)
                 .row("Nguồn", mythic ? "MythicMobs &8[" + def.mythicId + "&8]" : "Mob thường &8[" + def.entityType.name() + "&8]")
-                .row("Phần thưởng", def.rewardMode == MobDefinition.RewardMode.TOP
-                        ? "Top sát thương (" + def.topRanks.size() + " hạng)" : "Người hạ gục")
+                .row("Phần thưởng", def.rewardMode.label)
                 .row("Đang sống", String.valueOf(plugin.mobs().tracker().count(def.id)));
         if (mythic && !plugin.mythic().exists(def.mythicId)) lore.line("&#FFD166(!) Không tìm thấy mob MythicMobs này");
         return Menu.icon(material, Palette.MOB + plugin.mobs().displayName(def) + " &8[" + def.id + "&8]",

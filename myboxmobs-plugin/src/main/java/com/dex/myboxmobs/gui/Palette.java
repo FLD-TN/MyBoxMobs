@@ -18,6 +18,10 @@ public final class Palette {
     public static final String ALTAR = "&#F7A4C0";
     public static final String ALIVE = "&#F6E58D";
     public static final String SKILL = "&#FFB38A";
+    public static final String CLAN = "&#C7CEEA";
+    /** Same colours as BoxClans. */
+    public static final String DANH_VONG = "&#FFC94D";
+    public static final String MINH_HUY = "&#C77DFF";
     public static final String MONEY = "&a";
     public static final String GEM = "&#8245F8";
 
