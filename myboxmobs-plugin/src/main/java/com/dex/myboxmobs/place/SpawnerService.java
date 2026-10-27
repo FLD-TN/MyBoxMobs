@@ -51,10 +51,10 @@ public final class SpawnerService {
                 if (s != null) spawners.put(id, SpawnerDef.load(id, s));
             }
         }
-        // 0.5.0: spawners still on the old default hologram get the new one
+        // spawners still on an older default hologram (0.4 / 0.5.0) get the current one
         boolean migrated = false;
         for (SpawnerDef d : spawners.values()) {
-            if (d.holoLines.equals(OLD_DEFAULT_HOLO)) {
+            if (d.holoLines.equals(OLD_DEFAULT_HOLO) || d.holoLines.equals(DEFAULT_HOLO_050)) {
                 d.holoLines.clear();
                 d.holoLines.addAll(plugin.settings().spawnerHoloLines);
                 migrated = true;
@@ -65,6 +65,9 @@ public final class SpawnerService {
 
     private static final List<String> OLD_DEFAULT_HOLO = List.of("%mob%", "&#BFC7D5Xuất hiện sau: &f%countdown%",
             "&#BFC7D5Đang sống: &f%alive%&8/&f%max%");
+    private static final List<String> DEFAULT_HOLO_050 = List.of("#ICON: SPAWNER", "%mob%",
+            "&#FF6B6B❤ &#FFC9C9%health%  &8|  &#FFB86B⚔ &#FFE3C2%damage%", "&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%",
+            "&#B4F8C8Đang sống: &#E6FFEE%alive%&8/&#E6FFEE%max%");
 
     public void save() {
         YamlConfiguration y = new YamlConfiguration();

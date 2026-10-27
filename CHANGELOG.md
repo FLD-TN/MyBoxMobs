@@ -1,5 +1,11 @@
 # MyBoxMobs changelog
 
+## 0.5.1 (2026-10-27)
+
+- Spawner hologram: last line is "Đang tồn tại: x/x quái" with coloured numbers and a white "/" (the dark grey one
+  was unreadable); a mob that only deals damage with skills shows "sát thương" instead of "theo skill".
+- config.yml and messages.yml go to config-version 3. Spawners on the 0.5.0 default hologram are migrated.
+
 ## 0.5.0 (2026-10-27)
 
 - Skills: each mob can reuse MythicMobs skills (GUI "Skill" in the mob editor, list of every loaded MythicMobs
