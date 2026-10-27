@@ -43,7 +43,10 @@ announce:
   death:
     enabled: true
     lines:
-      - '%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục'
+      - ''
+      - '<center>%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục'
+      - '%top%'
+      - ''
   despawn:
     enabled: false
     lines:

@@ -25,6 +25,8 @@ public final class MobRegistry {
 
     private static final List<String> OLD_DEFAULT_DEATH = List.of("",
             "%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục", "%top%", "");
+    /** Death lines of the example mob shipped before 0.7.4 (no leaderboard). */
+    private static final List<String> OLD_EXAMPLE_DEATH = List.of("%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục");
 
     private static final List<String> DEFAULT_SPAWNER_HOLO_053 = List.of("&8[%mob%&8]", "",
             "&#FF6B6B❤ &#FFC9C9%health%  &7|  &#FFB86B⚔ &#FFE3C2%damage%",
@@ -65,9 +67,11 @@ public final class MobRegistry {
                 log.warning("Could not load mobs/" + f.getName() + ": " + ex.getMessage());
             }
         }
-        // 0.5.0: mobs still on the old default death message get the new one (with the leaderboard)
+        // 0.5.0 / 0.7.4: mobs still on an old default death message (or the old example's) get the current one
+        // (with the leaderboard)
         for (MobDefinition def : mobs.values()) {
-            if (def.death.lines.equals(OLD_DEFAULT_DEATH) && !defaultDeath.isEmpty()) {
+            if ((def.death.lines.equals(OLD_DEFAULT_DEATH) || def.death.lines.equals(OLD_EXAMPLE_DEATH))
+                    && !defaultDeath.isEmpty()) {
                 def.death.lines.clear();
                 def.death.lines.addAll(defaultDeath);
                 save(def);

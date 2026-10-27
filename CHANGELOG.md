@@ -1,5 +1,11 @@
 # MyBoxMobs changelog
 
+## 0.7.4 (2026-10-27)
+
+- The example mob (example_zombie) shipped a death message without `%top%`, so it never showed the damage board even
+  in top mode. The example now uses the current default death lines; mobs still on the old example lines are
+  migrated on load.
+
 ## 0.7.3 (2026-10-27)
 
 - `/mbm spawn` without coordinates, "Spawn thử" and the spawn button of the mob list put the mob 4 blocks in front
