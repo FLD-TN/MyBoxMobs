@@ -59,10 +59,10 @@ public final class MobListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onMythicLoot(MythicMobLootDropEvent e) {
         if (!mobs.hasDefinitionTag(e.getEntity())) return;
+        // Mythic exp and money are intangible drops: clearing that table removes them. setExp/setMoney must not
+        // be called: in 5.13.1 they build a new drop with a null config and throw.
         e.getDrops().setLootTable(new ArrayList<>());
         e.getDrops().setLootTableIntangible(new HashMap<>());
-        e.setExp(0);
-        e.setMoney(0);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

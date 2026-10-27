@@ -1,5 +1,11 @@
 # MyBoxMobs changelog
 
+## 0.4.1 (2026-10-27)
+
+- Fix: killing a managed MythicMobs mob threw a NullPointerException in `MythicMobLootDropEvent` on MythicMobs
+  5.13.1 (`setExp`/`setMoney` build a drop with a null config). Mythic exp and money are already removed by
+  clearing the intangible loot table, so those calls were dropped.
+
 ## 0.4.0 (2026-10-27)
 
 First build, milestones 0.1 to 0.4 of `MYBOXMOBS_SPEC.md` in one go (owner request). Not tested on a live server yet.
