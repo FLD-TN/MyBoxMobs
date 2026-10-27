@@ -25,16 +25,21 @@ class NameTagBarTest {
     @Test
     void nametagSettingsRoundTrip() throws InvalidConfigurationException {
         MobDefinition d = new MobDefinition("kragan", MobDefinition.Source.MYTHIC, List.of(), List.of(), List.of());
-        d.healthBar = false;
+        d.nameBar = true;
+        d.bossBar = true;
         d.nametagOffset = 1.25;
         YamlConfiguration y = new YamlConfiguration();
         y.loadFromString(d.toYaml().saveToString());
         MobDefinition back = MobDefinition.fromYaml("kragan", y, d);
-        assertEquals(false, back.healthBar);
+        assertEquals(true, back.nameBar);
+        assertEquals(true, back.bossBar);
         assertEquals(1.25, back.nametagOffset);
 
-        MobDefinition old = MobDefinition.fromYaml("old", new YamlConfiguration(), d);
-        assertEquals(true, old.healthBar, "older mob files get the bar");
+        YamlConfiguration v071 = new YamlConfiguration();
+        v071.set("nametag.health-bar", true);
+        MobDefinition old = MobDefinition.fromYaml("old", v071, d);
+        assertEquals(false, old.nameBar, "everything starts off, also for files saved by 0.7.1");
+        assertEquals(false, old.bossBar);
         assertEquals(0.3, old.nametagOffset);
     }
 }

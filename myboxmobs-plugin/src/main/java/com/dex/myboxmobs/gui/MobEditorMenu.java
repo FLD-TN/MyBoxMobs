@@ -83,11 +83,11 @@ public final class MobEditorMenu extends Menu {
                 }));
         String name = plugin.mobs().nameOf(def);
         Lore barLore = Lore.of()
-                .desc("Sau tên mob hiện thanh máu, phần đỏ là máu còn lại, phần xám là máu đã mất (giảm từ phải sang trái).")
-                .section("Thông tin:").row("Hiện tại", Palette.onOff(def.healthBar))
+                .desc("Bật: sau tên hiện thanh máu, đỏ là máu còn lại, xám là máu đã mất (giảm từ phải sang trái). Tắt: chỉ hiện tên.")
+                .section("Thông tin:").row("Hiện tại", Palette.onOff(def.nameBar))
                 .row("Độ cao trên model", Format.decimal(def.nametagOffset) + " block");
         if (name == null) barLore.note("&#FFD166", "(!) Mob chưa có tên nên chưa hiện gì");
-        set(14, icon(Material.RED_DYE, Palette.GENERAL + "Thanh máu trên tên", barLore
+        set(14, icon(Material.RED_DYE, Palette.GENERAL + "Thanh máu ở tên", barLore
                 .action("Chuột trái để bật/tắt").secondary("Chuột phải để chỉnh độ cao (mob có model)").build()), click -> {
             if (click.isRightClick()) {
                 askNumber("input.nametag-offset", -5, 10, v -> {
@@ -96,7 +96,18 @@ public final class MobEditorMenu extends Menu {
                 });
                 return;
             }
-            def.healthBar = !def.healthBar;
+            def.nameBar = !def.nameBar;
+            save();
+            refresh();
+        });
+        Lore bossLore = Lore.of()
+                .desc("Hiện tên và máu của mob trên bossbar cho người chơi ở gần. Dùng cho boss không có model, hoặc model không có bossbar riêng.")
+                .section("Thông tin:").row("Hiện tại", Palette.onOff(def.bossBar))
+                .row("Tầm hiện", plugin.settings().bossBarRange + " block");
+        if (name == null) bossLore.note("&#FFD166", "(!) Mob chưa có tên nên chưa hiện gì");
+        set(15, icon(Material.DRAGON_HEAD, Palette.GENERAL + "Thanh máu bossbar", bossLore
+                .action("Chuột trái để bật/tắt").build()), click -> {
+            def.bossBar = !def.bossBar;
             save();
             refresh();
         });

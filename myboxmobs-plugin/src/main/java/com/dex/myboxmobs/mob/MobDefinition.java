@@ -78,8 +78,10 @@ public final class MobDefinition {
     public double modelScale = 1.0;
     public boolean hideBase = true;
     public int xp;
-    /** Name + health bar above the mob (only when the mob has a name). */
-    public boolean healthBar = true;
+    /** Health bar after the name above the mob (only when the mob has a name); off = the name alone. */
+    public boolean nameBar;
+    /** Health shown in a boss bar to nearby players (bosses without a model, or whose model has no boss bar). */
+    public boolean bossBar;
     /** Extra height (blocks) of the name above a ModelEngine model. */
     public double nametagOffset = 0.3;
     public int lifetimeSeconds;
@@ -127,7 +129,8 @@ public final class MobDefinition {
         y.set("model.scale", modelScale);
         y.set("model.hide-base", hideBase);
         y.set("xp", xp);
-        y.set("nametag.health-bar", healthBar);
+        y.set("nametag.name-bar", nameBar);
+        y.set("nametag.boss-bar", bossBar);
         y.set("nametag.height-offset", nametagOffset);
         y.set("lifetime-seconds", lifetimeSeconds);
         y.set("rewards.mode", rewardMode.name());
@@ -225,7 +228,8 @@ public final class MobDefinition {
         d.modelScale = Math.max(0.1, y.getDouble("model.scale", 1.0));
         d.hideBase = y.getBoolean("model.hide-base", true);
         d.xp = Math.max(0, y.getInt("xp", 0));
-        d.healthBar = y.getBoolean("nametag.health-bar", true);
+        d.nameBar = y.getBoolean("nametag.name-bar", false);
+        d.bossBar = y.getBoolean("nametag.boss-bar", false);
         d.nametagOffset = Math.max(-5, Math.min(10, y.getDouble("nametag.height-offset", 0.3)));
         d.lifetimeSeconds = Math.max(0, y.getInt("lifetime-seconds", 0));
         try {

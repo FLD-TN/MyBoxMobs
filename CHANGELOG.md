@@ -1,5 +1,13 @@
 # MyBoxMobs changelog
 
+## 0.7.2 (2026-10-27)
+
+- Health display is now opt-in per mob, both off by default (owner decision): "Thanh máu ở tên" (on: name + bar,
+  off: the name alone) and the new "Thanh máu bossbar" (name and health in a boss bar for players within
+  `bossbar.range` blocks; for bosses without a model or whose model has no boss bar). Mob files saved by 0.7.1
+  (`nametag.health-bar`) are ignored: the keys are now `nametag.name-bar` and `nametag.boss-bar`.
+- config.yml: `bossbar.title`, `color`, `style`, `range` (built-in defaults, no config-version bump).
+
 ## 0.7.1 (2026-10-27)
 
 - Name + health bar above every MyBoxMobs mob that has a name: "Kragan &8| ||||||||||||||||||||", red for the

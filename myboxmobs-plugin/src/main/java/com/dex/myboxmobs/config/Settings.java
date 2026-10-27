@@ -32,6 +32,10 @@ public final class Settings {
     public final String barChar;
     public final String barFull;
     public final String barEmpty;
+    public final String bossBarTitle;
+    public final net.kyori.adventure.bossbar.BossBar.Color bossBarColor;
+    public final net.kyori.adventure.bossbar.BossBar.Overlay bossBarOverlay;
+    public final int bossBarRange;
     public final String clanSourceTop;
     public final String clanSourceKill;
     public final String moneyItem;
@@ -71,6 +75,12 @@ public final class Settings {
         barChar = c.getString("nametag.bar-char", "|");
         barFull = c.getString("nametag.full-color", "&#FF4D4D");
         barEmpty = c.getString("nametag.empty-color", "&7");
+        bossBarTitle = c.getString("bossbar.title", "%name%");
+        bossBarColor = enumOr(net.kyori.adventure.bossbar.BossBar.Color.class, c.getString("bossbar.color", "RED"),
+                net.kyori.adventure.bossbar.BossBar.Color.RED);
+        bossBarOverlay = enumOr(net.kyori.adventure.bossbar.BossBar.Overlay.class,
+                c.getString("bossbar.style", "NOTCHED_10"), net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_10);
+        bossBarRange = Math.max(8, Math.min(256, c.getInt("bossbar.range", 48)));
         clanSourceTop = c.getString("clans.points-source-top", "mob-boss");
         clanSourceKill = c.getString("clans.points-source-kill", "mob-kill");
         moneyItem = c.getString("gui.money-item", "treasure:money_item");
@@ -83,6 +93,14 @@ public final class Settings {
             zone = java.time.ZoneId.of("Asia/Ho_Chi_Minh");
         }
         timezone = zone;
+    }
+
+    private static <E extends Enum<E>> E enumOr(Class<E> type, String raw, E fallback) {
+        try {
+            return Enum.valueOf(type, raw.trim().toUpperCase(java.util.Locale.ROOT));
+        } catch (RuntimeException ex) {
+            return fallback;
+        }
     }
 
     private static String orDefault(String s, String def) {
