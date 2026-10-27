@@ -27,6 +27,11 @@ public final class Settings {
     public final List<String> topClanHeader;
     public final String topClanLine;
     public final int boardSize;
+    public final String nametagFormat;
+    public final int barLength;
+    public final String barChar;
+    public final String barFull;
+    public final String barEmpty;
     public final String clanSourceTop;
     public final String clanSourceKill;
     public final String moneyItem;
@@ -61,6 +66,11 @@ public final class Settings {
         topClanLine = c.getString("announce.top-clan-line",
                 "<center>%color%%icon% %clan% &#64748B— &#94A3B8gây ra %color%%damage% &#94A3B8sát thương &8(%members% người)");
         boardSize = Math.max(1, c.getInt("announce.board-size", 5));
+        nametagFormat = c.getString("nametag.format", "%name% &8| %bar%");
+        barLength = Math.max(1, Math.min(100, c.getInt("nametag.bar-length", 20)));
+        barChar = c.getString("nametag.bar-char", "|");
+        barFull = c.getString("nametag.full-color", "&#FF4D4D");
+        barEmpty = c.getString("nametag.empty-color", "&7");
         clanSourceTop = c.getString("clans.points-source-top", "mob-boss");
         clanSourceKill = c.getString("clans.points-source-kill", "mob-kill");
         moneyItem = c.getString("gui.money-item", "treasure:money_item");

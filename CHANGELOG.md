@@ -1,5 +1,14 @@
 # MyBoxMobs changelog
 
+## 0.7.1 (2026-10-27)
+
+- Name + health bar above every MyBoxMobs mob that has a name: "Kragan &8| ||||||||||||||||||||", red for the
+  health left, grey for the health lost, emptying from right to left; updated right after each hit or heal.
+- Mobs with a ModelEngine model (whose base entity and its name are hidden, e.g. Kragan) get the same line as a
+  floating text that follows the model at the height of its hitbox (+ a per-mob offset, default 0,3 block).
+- Mob editor: "Thanh máu trên tên" (on/off, right click for the height). config.yml: `nametag.format`, `bar-length`,
+  `bar-char`, `full-color`, `empty-color` (built-in defaults, no config-version bump).
+
 ## 0.7.0 (2026-10-27)
 
 BoxClans integration (optional: everything clan-related is hidden or inactive without BoxClans 1.4+).

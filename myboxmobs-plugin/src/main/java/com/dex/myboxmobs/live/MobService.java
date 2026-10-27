@@ -76,6 +76,16 @@ public final class MobService {
         return def.id;
     }
 
+    /** The name shown above the mob: its own name or the MythicMobs one; null when it has none. */
+    public @Nullable String nameOf(MobDefinition def) {
+        if (!def.displayName.isEmpty()) return def.displayName;
+        if (def.source == MobDefinition.Source.MYTHIC) {
+            String mythic = plugin.mythic().displayName(def.mythicId);
+            if (!mythic.isEmpty()) return mythic;
+        }
+        return null;
+    }
+
     /**
      * Spawns a definition. {@code announce} false for spawner waves after the first mob (spec 6: once per wave).
      * {@code null} when the spawn failed or a listener cancelled it.
@@ -109,6 +119,7 @@ public final class MobService {
         LiveMob live = new LiveMob(entity, def, def.id, origin, summoner, System.currentTimeMillis());
         live.ownerClan = ownerClan;
         tracker.add(live);
+        plugin.nameTags().added(live.uuid());
         MbmMobSpawnEvent event = new MbmMobSpawnEvent(entity, def.id, origin, summoner);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
@@ -409,6 +420,7 @@ public final class MobService {
             }
             live.ownerClan = uuidOrNull(pdc.get(clanKey, PersistentDataType.STRING));
             tracker.add(live);
+            plugin.nameTags().added(live.uuid());
             n++;
         }
         return n;
@@ -425,6 +437,7 @@ public final class MobService {
             saveDamage(mob);
             mob.ended = true;
             tracker.remove(e.getUniqueId());
+            plugin.nameTags().remove(e.getUniqueId());
         }
     }
 

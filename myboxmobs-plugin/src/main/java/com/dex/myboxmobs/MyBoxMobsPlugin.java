@@ -23,6 +23,7 @@ import com.dex.myboxmobs.live.ClanBossListener;
 import com.dex.myboxmobs.live.KillStats;
 import com.dex.myboxmobs.live.MobListener;
 import com.dex.myboxmobs.live.MobService;
+import com.dex.myboxmobs.live.NameTags;
 import com.dex.myboxmobs.live.RewardService;
 import com.dex.myboxmobs.mob.MobRegistry;
 import com.dex.myboxmobs.place.AltarDef;
@@ -59,6 +60,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
     private RewardService rewards;
     private SpawnerService spawners;
     private AltarService altars;
+    private NameTags nameTags;
     private ChatInput input;
 
     @Override
@@ -87,6 +89,8 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         kills = new KillStats(getDataFolder(), getLogger());
         kills.open();
         mobs = new MobService(this);
+        nameTags = new NameTags(this);
+        mobs.addEndListener(nameTags);
         announcer = new Announcer(() -> settings, mobs::displayName, () -> clans);
         rewards = new RewardService(() -> settings, messages, economy, mobs::displayName, () -> clans, getLogger());
         spawners = new SpawnerService(this);
@@ -99,6 +103,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         pm.registerEvents(new MobListener(this, mobs), this);
         pm.registerEvents(new AltarListener(altars, messages), this);
         pm.registerEvents(new ClanBossListener(this), this);
+        pm.registerEvents(nameTags, this);
         pm.registerEvents(new GuiListener(this), this);
         pm.registerEvents(input, this);
         PluginCommand command = getCommand("myboxmobs");
@@ -117,6 +122,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
             spawners.tick();
             altars.tick();
         }, 20L, 20L);
+        Bukkit.getScheduler().runTaskTimer(this, nameTags::tick, 1L, 1L);
         getLogger().info("ModelEngine " + (models.available() ? "found" : "not found")
                 + ", DecentHolograms " + (holograms.available() ? "found" : "not found")
                 + ", BoxClans " + (clans != ClanSupport.NONE ? "found" : "not found"));
@@ -126,6 +132,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
     public void onDisable() {
         GuiListener.closeAll();
         if (mobs != null) mobs.shutdown();
+        if (nameTags != null) nameTags.clear();
         if (spawners != null) spawners.clearRuntime();
         if (altars != null) altars.clearHolograms();
         if (kills != null) kills.close();
@@ -216,6 +223,10 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
 
     public AltarService altars() {
         return altars;
+    }
+
+    public NameTags nameTags() {
+        return nameTags;
     }
 
     public ChatInput input() {

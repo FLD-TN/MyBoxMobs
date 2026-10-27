@@ -70,6 +70,7 @@ input:
   schedule: '&#FFD166Nhập các giờ spawn, cách nhau bằng dấu cách, ví dụ &f12:00 20:30'
   clan-min-share: '&#FFD166Nhập % sát thương tối thiểu trong bang để nhận quà thành viên (&f0 &#FFD166là ai đánh cũng nhận)'
   clan-points: '&#FFD166Nhập số &#FFC94DDanh Vọng&#FFD166, &f0 &#FFD166là không có'
+  nametag-offset: '&#FFD166Nhập độ cao tên trên model (block, ví dụ &f0,3&#FFD166; số âm để hạ xuống)'
   clan-currency: '&#FFD166Nhập số &#C77DFFMinh Huy&#FFD166, &f0 &#FFD166là không có'
 
 gui:

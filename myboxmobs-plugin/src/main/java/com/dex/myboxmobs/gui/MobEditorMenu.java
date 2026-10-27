@@ -81,6 +81,25 @@ public final class MobEditorMenu extends Menu {
                     def.xp = (int) v;
                     save();
                 }));
+        String name = plugin.mobs().nameOf(def);
+        Lore barLore = Lore.of()
+                .desc("Sau tên mob hiện thanh máu, phần đỏ là máu còn lại, phần xám là máu đã mất (giảm từ phải sang trái).")
+                .section("Thông tin:").row("Hiện tại", Palette.onOff(def.healthBar))
+                .row("Độ cao trên model", Format.decimal(def.nametagOffset) + " block");
+        if (name == null) barLore.note("&#FFD166", "(!) Mob chưa có tên nên chưa hiện gì");
+        set(14, icon(Material.RED_DYE, Palette.GENERAL + "Thanh máu trên tên", barLore
+                .action("Chuột trái để bật/tắt").secondary("Chuột phải để chỉnh độ cao (mob có model)").build()), click -> {
+            if (click.isRightClick()) {
+                askNumber("input.nametag-offset", -5, 10, v -> {
+                    def.nametagOffset = v;
+                    save();
+                });
+                return;
+            }
+            def.healthBar = !def.healthBar;
+            save();
+            refresh();
+        });
         // row 2-3: stats
         stat(19, Stat.HEALTH, Material.RED_DYE, "Máu tối đa", "Giới hạn: " + Format.number(plugin.settings().maxHealth)
                 + " (spigot.yml maxHealth)", 1, plugin.settings().maxHealth);

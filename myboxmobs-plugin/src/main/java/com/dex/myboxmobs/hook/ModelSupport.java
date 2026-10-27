@@ -31,6 +31,11 @@ public interface ModelSupport {
         public boolean apply(Entity entity, String id, double scale, boolean hideBase, boolean replace) {
             return false;
         }
+
+        @Override
+        public double modelHeight(Entity entity) {
+            return Double.NaN;
+        }
     };
 
     boolean available();
@@ -45,4 +50,7 @@ public interface ModelSupport {
 
     /** Attaches {@code id}; {@code replace} removes the entity's other models first. False when it failed. */
     boolean apply(Entity entity, String id, double scale, boolean hideBase, boolean replace);
+
+    /** Height of the tallest model hitbox on the entity (scaled); NaN without a model. */
+    double modelHeight(Entity entity);
 }

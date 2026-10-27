@@ -1,6 +1,7 @@
 package com.dex.myboxmobs.hook;
 
 import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.entity.Hitbox;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.util.ArrayList;
@@ -39,6 +40,24 @@ public final class MegModelSupport implements ModelSupport {
     public boolean hasModel(Entity entity) {
         ModeledEntity modeled = ModelEngineAPI.getModeledEntity(entity.getUniqueId());
         return modeled != null && !modeled.getModels().isEmpty();
+    }
+
+    @Override
+    public double modelHeight(Entity entity) {
+        ModeledEntity modeled = ModelEngineAPI.getModeledEntity(entity.getUniqueId());
+        if (modeled == null) return Double.NaN;
+        double best = Double.NaN;
+        for (ActiveModel model : modeled.getModels().values()) {
+            try {
+                Hitbox box = model.getBlueprint().getMainHitbox();
+                if (box == null) continue;
+                double h = box.getHeight() * model.getHitboxScale().y();
+                if (Double.isNaN(best) || h > best) best = h;
+            } catch (RuntimeException ex) {
+                // a model without a blueprint hitbox: try the next one
+            }
+        }
+        return best;
     }
 
     @Override

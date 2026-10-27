@@ -78,6 +78,10 @@ public final class MobDefinition {
     public double modelScale = 1.0;
     public boolean hideBase = true;
     public int xp;
+    /** Name + health bar above the mob (only when the mob has a name). */
+    public boolean healthBar = true;
+    /** Extra height (blocks) of the name above a ModelEngine model. */
+    public double nametagOffset = 0.3;
     public int lifetimeSeconds;
     public RewardMode rewardMode = RewardMode.KILLER;
     public boolean multiplierEnabled = true;
@@ -123,6 +127,8 @@ public final class MobDefinition {
         y.set("model.scale", modelScale);
         y.set("model.hide-base", hideBase);
         y.set("xp", xp);
+        y.set("nametag.health-bar", healthBar);
+        y.set("nametag.height-offset", nametagOffset);
         y.set("lifetime-seconds", lifetimeSeconds);
         y.set("rewards.mode", rewardMode.name());
         y.set("rewards.multiplier-enabled", multiplierEnabled);
@@ -219,6 +225,8 @@ public final class MobDefinition {
         d.modelScale = Math.max(0.1, y.getDouble("model.scale", 1.0));
         d.hideBase = y.getBoolean("model.hide-base", true);
         d.xp = Math.max(0, y.getInt("xp", 0));
+        d.healthBar = y.getBoolean("nametag.health-bar", true);
+        d.nametagOffset = Math.max(-5, Math.min(10, y.getDouble("nametag.height-offset", 0.3)));
         d.lifetimeSeconds = Math.max(0, y.getInt("lifetime-seconds", 0));
         try {
             d.rewardMode = RewardMode.valueOf(y.getString("rewards.mode", "KILLER").toUpperCase());

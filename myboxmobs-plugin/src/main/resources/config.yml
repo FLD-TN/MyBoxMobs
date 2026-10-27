@@ -63,6 +63,16 @@ announce:
     despawn:
       - '%mob% &#BFC7D5đã rời đi vì không ai hạ gục kịp'
 
+# Name + health bar above MyBoxMobs mobs that have a name (per mob on/off in the mob editor).
+# %name% mob name, %bar% the bar: full-color for the health left, empty-color for the health lost (right to left).
+# Mobs with a ModelEngine model show it as a floating text above the model (height per mob in the editor).
+nametag:
+  format: '%name% &8| %bar%'
+  bar-length: 20
+  bar-char: '|'
+  full-color: '&#FF4D4D'
+  empty-color: '&7'
+
 hologram:
   # Height above the spawner location / above the altar block
   spawner-height: 3.2
