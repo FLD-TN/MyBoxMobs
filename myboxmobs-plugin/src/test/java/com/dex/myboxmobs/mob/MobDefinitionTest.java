@@ -127,8 +127,7 @@ class MobDefinitionTest {
         y.loadFromString(d.toYaml().saveToString());
         assertEquals(List.of("&a%mob%", "%countdown%"), MobDefinition.fromYaml("x", y, defaults).spawnerHolo);
         YamlConfiguration old = new YamlConfiguration();
-        old.loadFromString("source: CUSTOM
-");
+        old.loadFromString("source: CUSTOM" + System.lineSeparator());
         assertEquals(defaults.spawnerHolo, MobDefinition.fromYaml("old", old, defaults).spawnerHolo,
                 "mob files without a template get the config default");
     }
