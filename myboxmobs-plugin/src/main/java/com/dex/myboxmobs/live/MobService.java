@@ -5,6 +5,7 @@ import com.dex.myboxmobs.api.event.MbmMobDeathEvent;
 import com.dex.myboxmobs.api.event.MbmMobDespawnEvent;
 import com.dex.myboxmobs.api.event.MbmMobSpawnEvent;
 import com.dex.myboxmobs.mob.MobDefinition;
+import com.dex.myboxmobs.mob.SkillEntry;
 import com.dex.myboxmobs.text.Text;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -100,7 +101,86 @@ public final class MobService {
         }
         attachModel(def, entity);
         if (announce) plugin.announcer().spawn(def, entity.getLocation(), summoner);
+        long now = System.currentTimeMillis();
+        for (SkillEntry e : def.skills) if (e.trigger == SkillEntry.Trigger.TIMER) live.lastCast.put(e, now);
+        // after MythicMobs' own spawn skills and the model
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!live.ended && entity.isValid()) castSkills(live, SkillEntry.Trigger.SPAWN, null);
+        }, 5L);
         return live;
+    }
+
+    /**
+     * Casts the definition's MythicMobs skills of this trigger (spec: skill settings). {@code triggerEntity} is the
+     * attacker (DAMAGED) or the victim (ATTACK), null otherwise.
+     */
+    public void castSkills(LiveMob mob, SkillEntry.Trigger trigger, @Nullable Entity triggerEntity) {
+        if (mob.def == null || mob.def.skills.isEmpty()) return;
+        if (casting) return;
+        casting = true;
+        try {
+            castSkillsNow(mob, trigger, triggerEntity);
+        } finally {
+            casting = false;
+        }
+    }
+
+    /** True while MyBoxMobs is casting: damage dealt by that skill does not trigger more skills right away. */
+    public boolean isCasting() {
+        return casting;
+    }
+
+    private boolean casting;
+
+    private void castSkillsNow(LiveMob mob, SkillEntry.Trigger trigger, @Nullable Entity triggerEntity) {
+        long now = System.currentTimeMillis();
+        for (SkillEntry e : mob.def.skills) {
+            if (e.trigger != trigger) continue;
+            Long last = mob.lastCast.get(e);
+            if (trigger == SkillEntry.Trigger.TIMER) {
+                if (last != null && now - last < Math.max(1, e.seconds) * 1000L) continue;
+            } else if (e.seconds > 0 && last != null && now - last < e.seconds * 1000L) {
+                continue;
+            }
+            mob.lastCast.put(e, now);
+            if (e.chance < 100.0 && java.util.concurrent.ThreadLocalRandom.current().nextDouble(100.0) >= e.chance) continue;
+            Entity target = switch (e.target) {
+                case SELF -> mob.entity;
+                case TRIGGER -> triggerEntity;
+                case NEAREST_PLAYER -> nearestPlayer(mob.entity, 32);
+                case TARGET -> mob.entity instanceof org.bukkit.entity.Mob m && m.getTarget() != null
+                        ? m.getTarget() : triggerEntity;
+            };
+            try {
+                if (!plugin.mythic().castSkill(mob.entity, e.skill, triggerEntity, target)) {
+                    warnSkill(mob, e, "MythicMobs did not cast it (unknown skill?)");
+                }
+            } catch (RuntimeException ex) {
+                warnSkill(mob, e, ex.toString());
+            }
+        }
+    }
+
+    private final java.util.Set<String> skillWarnings = new java.util.HashSet<>();
+
+    private void warnSkill(LiveMob mob, SkillEntry e, String why) {
+        if (skillWarnings.add(mob.id + "/" + e.skill)) {
+            plugin.getLogger().warning("Mob " + mob.id + ": skill '" + e.skill + "' failed: " + why + " (reported once)");
+        }
+    }
+
+    private static @Nullable Entity nearestPlayer(Entity from, double radius) {
+        Entity best = null;
+        double bestDist = radius * radius;
+        for (org.bukkit.entity.Player p : from.getWorld().getPlayers()) {
+            if (p.isDead() || p.getGameMode() == org.bukkit.GameMode.SPECTATOR) continue;
+            double d = p.getLocation().distanceSquared(from.getLocation());
+            if (d <= bestDist) {
+                bestDist = d;
+                best = p;
+            }
+        }
+        return best;
     }
 
     /** A raw MythicMobs mob of a spawner: tracked for max-alive and leash only (spec 7). */
@@ -196,6 +276,7 @@ public final class MobService {
         tracker.remove(mob.uuid());
         MobDefinition def = mob.def;
         if (def != null) {
+            castSkills(mob, SkillEntry.Trigger.DEATH, null);
             LinkedHashMap<UUID, Double> damage = mob.sortedDamage();
             UUID killer = mob.lastHitter;
             MbmMobDeathEvent event = new MbmMobDeathEvent(mob.entity, def.id, killer, damage);
@@ -226,6 +307,8 @@ public final class MobService {
                 end(mob, MbmMobDespawnEvent.Reason.REMOVED);
             } else if (mob.expiresAt > 0 && now >= mob.expiresAt) {
                 end(mob, MbmMobDespawnEvent.Reason.LIFETIME);
+            } else {
+                castSkills(mob, SkillEntry.Trigger.TIMER, null);
             }
         }
     }

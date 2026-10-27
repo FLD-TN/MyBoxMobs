@@ -49,6 +49,18 @@ public final class AltarService implements MobService.EndListener {
             ConfigurationSection s = root.getConfigurationSection(id);
             if (s != null) altars.put(id, AltarDef.load(id, s));
         }
+        // 0.5.0: amounts go before the item ("x1 Trial Key") in the old default requirement line
+        boolean migrated = false;
+        for (AltarDef d : altars.values()) {
+            for (int i = 0; i < d.holoLines.size(); i++) {
+                String line = d.holoLines.get(i);
+                if (line.contains("%item% &8x&f%amount%")) {
+                    d.holoLines.set(i, line.replace("%item% &8x&f%amount%", "&fx%amount% %item%"));
+                    migrated = true;
+                }
+            }
+        }
+        if (migrated) save();
     }
 
     public void save() {
@@ -179,8 +191,9 @@ public final class AltarService implements MobService.EndListener {
             String countdown = cooling ? Format.duration((d.cooldownUntil - now + 999) / 1000) : "";
             List<String> lines = new ArrayList<>();
             for (String line : source) {
-                lines.add(Text.legacy(Messages.apply(line, "mob", mob, "item", item, "amount", amount,
-                        "countdown", countdown, "id", d.id)));
+                String filled = Messages.apply(line, "mob", mob, "item", item, "amount", amount,
+                        "countdown", countdown, "id", d.id);
+                lines.add(filled.startsWith("#") ? filled : Text.legacy(filled));
             }
             plugin.holograms().show(HOLO + d.id, loc.clone().add(0.5, plugin.settings().altarHoloHeight, 0.5), lines);
         }

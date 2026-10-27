@@ -1,5 +1,23 @@
 # MyBoxMobs changelog
 
+## 0.5.0 (2026-10-27)
+
+- Skills: each mob can reuse MythicMobs skills (GUI "Skill" in the mob editor, list of every loaded MythicMobs
+  skill with search). Per skill: trigger (spawn, every X s, when damaged, when it hits, death), target (mob's
+  target, trigger entity, nearest player, itself), interval / cooldown, chance. Works for vanilla and MythicMobs
+  mobs; skill damage does not re-trigger skills in the same tick.
+- Damage leaderboard in death announcements: header "Bảng xếp hạng sát thương", boss name centred under it, blank
+  line, then (1) (2) (3)... with gold / silver / bronze / grey rank colours (config announce.top-header,
+  top-line, rank-colors). Any announcement line starting with <center> is centred in the chat.
+- Spawner hologram: spinning empty spawner icon (#ICON: SPAWNER), boss health (❤) and damage (⚔), pastel colours.
+  New placeholders %health% %damage%; DecentHolograms line types (#ICON, #HEAD...) pass through untouched.
+- Altar requirement: the item can be replaced (click another item in your inventory), right click clears it,
+  chat confirmation each time.
+- Quantities are written before the item, in white: "x1 Trial Key" (altar hologram, altar message, reward
+  message, spawn message).
+- config.yml and messages.yml go to config-version 2 (old files are moved to old-configs/). Existing altars,
+  spawners and mobs still on the old default texts are migrated automatically; edited texts are kept.
+
 ## 0.4.1 (2026-10-27)
 
 - Fix: killing a managed MythicMobs mob threw a NullPointerException in `MythicMobLootDropEvent` on MythicMobs

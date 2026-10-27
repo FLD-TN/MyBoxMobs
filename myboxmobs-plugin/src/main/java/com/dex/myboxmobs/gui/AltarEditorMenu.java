@@ -6,6 +6,7 @@ import com.dex.myboxmobs.place.MobRef;
 import com.dex.myboxmobs.text.Format;
 import com.dex.myboxmobs.text.Lore;
 import com.dex.myboxmobs.text.Text;
+import com.dex.myboxmobs.util.ItemNames;
 import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -48,17 +49,25 @@ public final class AltarEditorMenu extends Menu {
                         open();
                     }, this::open);
                 });
-        Lore req = Lore.of().desc("Bấm vào vật phẩm trong túi để đặt làm vật phẩm yêu cầu. Số lượng = số lượng của chồng đó. "
-                + "So khớp tuyệt đối.");
         ItemStack shown;
         if (d.requirement == null) {
-            shown = icon(Material.STRUCTURE_VOID, Palette.ALTAR + "Vật phẩm yêu cầu &8(chưa đặt)", req.build());
+            shown = icon(Material.STRUCTURE_VOID, Palette.ALTAR + "Vật phẩm yêu cầu &8(chưa đặt)", Lore.of()
+                    .desc("Bấm vào một vật phẩm trong túi của bạn để đặt làm vật phẩm yêu cầu. Số lượng lấy theo chồng đó, so khớp tuyệt đối.")
+                    .build());
         } else {
-            shown = withExtraLore(d.requirement, req.section("Thông tin:").row("Số lượng", String.valueOf(d.requirement.getAmount()))
-                    .action("Chuột trái để đổi số lượng").build());
+            shown = withExtraLore(d.requirement, Lore.of().section("Vật phẩm yêu cầu:")
+                    .row("Cần", "&fx" + d.requirement.getAmount() + " " + ItemNames.of(d.requirement))
+                    .desc("Muốn thay vật phẩm khác: bấm vào vật phẩm đó trong túi của bạn.")
+                    .action("Chuột trái để đổi số lượng").danger("Chuột phải để bỏ vật phẩm yêu cầu").build());
         }
         set(12, shown, click -> {
             if (d.requirement == null) return;
+            if (click.isRightClick()) {
+                d.requirement = null;
+                changed();
+                plugin.messages().send(player, "altar.requirement-cleared");
+                return;
+            }
             askNumber("input.amount-required", 1, 64, v -> {
                 d.requirement.setAmount((int) v);
                 plugin.altars().save();
@@ -115,7 +124,10 @@ public final class AltarEditorMenu extends Menu {
 
     @Override
     protected void onOwnItemClick(ItemStack item, ClickType click) {
+        boolean replaced = d.requirement != null;
         d.requirement = item.clone();
         changed();
+        plugin.messages().send(player, replaced ? "altar.requirement-replaced" : "altar.requirement-set",
+                "item", ItemNames.of(item), "amount", String.valueOf(item.getAmount()));
     }
 }

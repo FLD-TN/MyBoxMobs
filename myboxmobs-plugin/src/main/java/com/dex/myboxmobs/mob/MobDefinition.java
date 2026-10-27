@@ -63,6 +63,7 @@ public final class MobDefinition {
     public boolean multiplierEnabled = true;
     public final List<RewardEntry> killerRewards = new ArrayList<>();
     public final List<TopRank> topRanks = new ArrayList<>();
+    public final List<SkillEntry> skills = new ArrayList<>();
     public final Announcement spawn;
     public final Announcement death;
     public final Announcement despawn;
@@ -102,6 +103,9 @@ public final class MobDefinition {
         List<Map<String, Object>> top = new ArrayList<>();
         for (TopRank r : topRanks) top.add(r.serialize());
         y.set("rewards.top", top);
+        List<Map<String, Object>> skillList = new ArrayList<>();
+        for (SkillEntry e : skills) skillList.add(e.serialize());
+        y.set("skills", skillList);
         writeAnnouncement(y, "spawn", spawn);
         writeAnnouncement(y, "death", death);
         writeAnnouncement(y, "despawn", despawn);
@@ -159,6 +163,10 @@ public final class MobDefinition {
             if (e != null) d.killerRewards.add(e);
         }
         for (Map<?, ?> m : y.getMapList("rewards.top")) d.topRanks.add(TopRank.deserialize(m));
+        for (Map<?, ?> m : y.getMapList("skills")) {
+            SkillEntry e = SkillEntry.deserialize(m);
+            if (e != null) d.skills.add(e);
+        }
         d.spawn.enabled = y.getBoolean("announce.spawn.enabled", false);
         d.death.enabled = y.getBoolean("announce.death.enabled", false);
         d.despawn.enabled = y.getBoolean("announce.despawn.enabled", false);

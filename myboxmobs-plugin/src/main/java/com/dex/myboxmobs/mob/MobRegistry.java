@@ -22,6 +22,9 @@ public final class MobRegistry {
     private List<String> defaultDeath = List.of();
     private List<String> defaultDespawn = List.of();
 
+    private static final List<String> OLD_DEFAULT_DEATH = List.of("",
+            "%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục", "%top%", "");
+
     public MobRegistry(File dataFolder, Logger log) {
         this.folder = new File(dataFolder, "mobs");
         this.log = log;
@@ -49,6 +52,14 @@ public final class MobRegistry {
                 mobs.put(id, MobDefinition.fromYaml(id, YamlConfiguration.loadConfiguration(f), defaults));
             } catch (RuntimeException ex) {
                 log.warning("Could not load mobs/" + f.getName() + ": " + ex.getMessage());
+            }
+        }
+        // 0.5.0: mobs still on the old default death message get the new one (with the leaderboard)
+        for (MobDefinition def : mobs.values()) {
+            if (def.death.lines.equals(OLD_DEFAULT_DEATH) && !defaultDeath.isEmpty()) {
+                def.death.lines.clear();
+                def.death.lines.addAll(defaultDeath);
+                save(def);
             }
         }
         log.info("Loaded " + mobs.size() + " mob definitions");

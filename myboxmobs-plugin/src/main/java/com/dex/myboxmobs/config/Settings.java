@@ -21,6 +21,9 @@ public final class Settings {
     public final List<String> altarHoloLines;
     public final List<String> altarHoloCooldownLines;
     public final String topLine;
+    public final List<String> topHeader;
+    public final List<String> rankColors;
+    public final String rankColorOthers;
     public final String moneyItem;
     public final String gemItem;
     public final int maxHealth;
@@ -40,7 +43,11 @@ public final class Settings {
         spawnerHoloLines = c.getStringList("hologram.spawner-lines");
         altarHoloLines = c.getStringList("hologram.altar-lines");
         altarHoloCooldownLines = c.getStringList("hologram.altar-cooldown-lines");
-        topLine = c.getString("announce.top-line", "&7  #%rank% &f%player% &8- &e%damage% sát thương");
+        topLine = c.getString("announce.top-line", "<center>%color%(%rank%) &f%player% &8- &#FFB38A%damage% &7sát thương");
+        topHeader = c.getStringList("announce.top-header");
+        List<String> colors = c.getStringList("announce.rank-colors");
+        rankColors = colors.isEmpty() ? List.of("&#FFD700", "&#C0C0C0", "&#CD7F32") : colors;
+        rankColorOthers = c.getString("announce.rank-color-others", "&7");
         moneyItem = c.getString("gui.money-item", "treasure:money_item");
         gemItem = c.getString("gui.gem-item", "treasure:gem_item");
         maxHealth = Math.max(1, c.getInt("max-health", 2048));

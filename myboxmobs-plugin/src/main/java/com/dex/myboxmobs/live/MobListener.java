@@ -2,6 +2,7 @@ package com.dex.myboxmobs.live;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.dex.myboxmobs.api.event.MbmMobDespawnEvent;
+import com.dex.myboxmobs.mob.SkillEntry;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import io.lumine.mythic.bukkit.events.MythicMobLootDropEvent;
 import java.util.ArrayList;
@@ -31,10 +32,18 @@ public final class MobListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent e) {
-        LiveMob mob = mobs.tracker().get(e.getEntity().getUniqueId());
-        if (mob == null || mob.def == null) return;
-        Player player = attacker(e.getDamager());
-        if (player != null) mobs.recordDamage(mob, player.getUniqueId(), e.getFinalDamage());
+        Entity source = e.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Entity shooter
+                ? shooter : e.getDamager();
+        LiveMob victim = mobs.tracker().get(e.getEntity().getUniqueId());
+        if (victim != null && victim.def != null) {
+            Player player = attacker(e.getDamager());
+            if (player != null) mobs.recordDamage(victim, player.getUniqueId(), e.getFinalDamage());
+            if (!mobs.isCasting()) mobs.castSkills(victim, SkillEntry.Trigger.DAMAGED, source);
+        }
+        LiveMob attacker = mobs.tracker().get(source.getUniqueId());
+        if (attacker != null && attacker.def != null && !mobs.isCasting()) {
+            mobs.castSkills(attacker, SkillEntry.Trigger.ATTACK, e.getEntity());
+        }
     }
 
     /** Direct hits and projectiles only; tamed pets do not count (owner decision). */

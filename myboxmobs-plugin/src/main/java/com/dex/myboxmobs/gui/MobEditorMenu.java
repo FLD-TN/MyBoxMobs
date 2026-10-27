@@ -111,6 +111,10 @@ public final class MobEditorMenu extends Menu {
                 .section("Thông tin:").row("Xuất hiện", Palette.onOff(def.spawn.enabled))
                 .row("Bị hạ gục", Palette.onOff(def.death.enabled)).row("Biến mất", Palette.onOff(def.despawn.enabled))
                 .action("Chuột trái để mở").build()), click -> new AnnounceMenu(plugin, player, def, this).open());
+        set(40, icon(Material.BLAZE_POWDER, Palette.SKILL + "Skill", Lore.of()
+                .desc("Dùng lại skill có sẵn trong MythicMobs cho mob này: chọn skill, khi nào dùng và nhắm vào ai.")
+                .section("Thông tin:").row("Số skill", String.valueOf(def.skills.size()))
+                .action("Chuột trái để mở").build()), click -> new SkillsMenu(plugin, player, def, this).open());
         // row 6: actions
         set(45, icon(Material.ARROW, "&#BFC7D5Quay lại", Lore.of().action("Chuột trái để quay lại").build()),
                 click -> Gui.mobs(plugin, player));

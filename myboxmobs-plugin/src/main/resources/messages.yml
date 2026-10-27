@@ -1,7 +1,7 @@
 # MyBoxMobs — messages
 
 # Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
-config-version: 1
+config-version: 2
 #
 # Colours: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>), PlaceholderAPI
 # Symbols: ✔ success, ✘ error, (!) warning. One line per message, no trailing full stop
@@ -64,6 +64,7 @@ input:
   weight: '&#FFD166Nhập trọng số (càng cao càng hay xuất hiện)'
   amount-required: '&#FFD166Nhập số lượng vật phẩm yêu cầu'
   cooldown: '&#FFD166Nhập thời gian chờ (giây), &f0 &#FFD166là không chờ'
+  skill-seconds: '&#FFD166Nhập số giây'
 
 gui:
   select-slot-first: '&#FFD166(!) Hãy chọn một ô trang bị trước'
@@ -74,7 +75,7 @@ mob:
   deleted: '&#7CFC9A✔ Đã xoá mob &f%id%'
   exists: '&#FF6B6B✘ Mob &f%id% &#FF6B6Bđã tồn tại'
   unknown: '&#FF6B6B✘ Không có mob &f%id%'
-  spawned: '&#7CFC9A✔ Đã spawn &f%amount%x %id%'
+  spawned: '&#7CFC9A✔ Đã spawn &fx%amount% %id%'
   spawn-failed: '&#FF6B6B✘ Không spawn được &f%id%&#FF6B6B, xem console'
   killed: '&#7CFC9A✔ Đã xoá &f%amount% &#7CFC9Amob'
 
@@ -91,6 +92,9 @@ spawner:
   paused: '&#FF8A8Ađang tạm dừng'
   full: '&#FFD166đã đủ mob'
   waiting: '&#BFC7D5chờ người chơi tới gần'
+  # %health% / %damage% of the hologram when the value is unknown / when the mob only hurts with skills
+  stat-default: 'mặc định'
+  damage-skills: 'theo skill'
 
 altar:
   created: '&#7CFC9A✔ Đã tạo bàn triệu hồi &f%id%&#7CFC9A, mở &f/mbm &#7CFC9Ađể đặt vật phẩm yêu cầu'
@@ -105,14 +109,17 @@ altar:
   not-ready: '&#FFD166(!) Bàn triệu hồi này chưa được cài đặt xong'
   busy: '&#FF6B6B✘ %mob% &#FF6B6Bđang xuất hiện, chưa thể triệu hồi thêm'
   cooldown: '&#FF6B6B✘ Có thể triệu hồi lại sau &f%time%'
-  wrong-item: '&#FF6B6B✘ Cần cầm &f%item% &8x&f%amount% &#FF6B6Btrên tay để triệu hồi'
+  wrong-item: '&#FF6B6B✘ Cần cầm &fx%amount% %item% &#FF6B6Btrên tay để triệu hồi'
+  requirement-set: '&#7CFC9A✔ Đã đặt vật phẩm yêu cầu: &fx%amount% %item%'
+  requirement-replaced: '&#7CFC9A✔ Đã thay vật phẩm yêu cầu thành &fx%amount% %item%'
+  requirement-cleared: '&#FFD166(!) Đã bỏ vật phẩm yêu cầu, bàn chưa dùng được cho tới khi đặt lại'
   failed: '&#FF6B6B✘ Không triệu hồi được, hãy báo quản trị viên'
   summoned: '&#7CFC9A✔ Bạn đã triệu hồi %mob%'
   refunded: '&#FFD166(!) Boss đã rời đi, vật phẩm triệu hồi được trả lại cho bạn'
   protected: '&#FF6B6B✘ Không thể phá bàn triệu hồi'
 
 reward:
-  item: '&#7CFC9A✔ Nhận &f%amount%x %item%'
+  item: '&#7CFC9A✔ Nhận &fx%amount% %item%'
   money: '&#7CFC9A✔ Nhận &a%amount%$'
   gem: '&#7CFC9A✔ Nhận &#8245F8%amount% %gem%'
   failed: '&#FF6B6B✘ Một phần thưởng không cộng được, hãy báo quản trị viên'

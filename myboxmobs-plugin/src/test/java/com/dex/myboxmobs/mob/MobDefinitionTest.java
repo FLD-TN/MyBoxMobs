@@ -95,4 +95,25 @@ class MobDefinitionTest {
         assertFalse(MobDefinition.ID.matcher("Frost").matches());
         assertFalse(MobDefinition.ID.matcher("a-b").matches());
     }
+
+    @Test
+    void skillsRoundTrip() throws InvalidConfigurationException {
+        MobDefinition d = blank("x", MobDefinition.Source.CUSTOM);
+        SkillEntry e = new SkillEntry("warlord_kragan_whirlwind");
+        e.trigger = SkillEntry.Trigger.DAMAGED;
+        e.target = SkillEntry.Target.TRIGGER;
+        e.seconds = 4;
+        e.chance = 35;
+        d.skills.add(e);
+        YamlConfiguration y = new YamlConfiguration();
+        y.loadFromString(d.toYaml().saveToString());
+        MobDefinition back = MobDefinition.fromYaml("x", y, blank("defaults", MobDefinition.Source.CUSTOM));
+        assertEquals(1, back.skills.size());
+        SkillEntry b = back.skills.get(0);
+        assertEquals("warlord_kragan_whirlwind", b.skill);
+        assertEquals(SkillEntry.Trigger.DAMAGED, b.trigger);
+        assertEquals(SkillEntry.Target.TRIGGER, b.target);
+        assertEquals(4, b.seconds);
+        assertEquals(35.0, b.chance);
+    }
 }

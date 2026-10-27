@@ -82,7 +82,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         kills = new KillStats(getDataFolder(), getLogger());
         kills.open();
         mobs = new MobService(this);
-        announcer = new Announcer(() -> settings.topLine, mobs::displayName);
+        announcer = new Announcer(() -> settings, mobs::displayName);
         rewards = new RewardService(() -> settings, messages, economy, mobs::displayName, getLogger());
         spawners = new SpawnerService(this);
         spawners.load();

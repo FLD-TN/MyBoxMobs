@@ -58,6 +58,48 @@ public final class MythicHook {
         return MythicBukkit.inst().getMobManager().getMythicMob(mythicId).map(MythicMob::getEntityTypeString).orElse("");
     }
 
+    /** Every loaded MythicMobs skill (metaskill) name, sorted. */
+    public List<String> skillNames() {
+        List<String> names = new ArrayList<>(MythicBukkit.inst().getSkillManager().getSkillNames());
+        names.sort(String.CASE_INSENSITIVE_ORDER);
+        return names;
+    }
+
+    public boolean skillExists(String skill) {
+        return skill != null && MythicBukkit.inst().getSkillManager().getSkill(skill).isPresent();
+    }
+
+    /**
+     * Casts a MythicMobs skill with {@code caster} (any entity, also vanilla mobs). {@code target} becomes the
+     * inherited target of the skill lines without their own targeter, {@code trigger} is the trigger entity.
+     */
+    public boolean castSkill(Entity caster, String skill, @Nullable Entity trigger, @Nullable Entity target) {
+        java.util.Collection<Entity> targets = target == null ? List.of() : List.of(target);
+        return MythicBukkit.inst().getAPIHelper().castSkill(caster, skill, trigger, caster.getLocation(),
+                targets, List.of(), 1f);
+    }
+
+    /** Health / Damage written in the MythicMobs file, NaN when missing or not a plain number. */
+    public double baseHealth(String mythicId) {
+        return configNumber(mythicId, "Health");
+    }
+
+    public double baseDamage(String mythicId) {
+        return configNumber(mythicId, "Damage");
+    }
+
+    private double configNumber(String mythicId, String key) {
+        Optional<MythicMob> mob = MythicBukkit.inst().getMobManager().getMythicMob(mythicId);
+        if (mob.isEmpty() || mob.get().getConfig() == null) return Double.NaN;
+        String raw = mob.get().getConfig().getString(key);
+        if (raw == null) return Double.NaN;
+        try {
+            return Double.parseDouble(raw.strip());
+        } catch (NumberFormatException ex) {
+            return Double.NaN;
+        }
+    }
+
     /** Model ids the MythicMobs file references in its skills, for the pack check (spec 3.2). */
     public Set<String> referencedModels(String mythicId) {
         Set<String> out = new LinkedHashSet<>();

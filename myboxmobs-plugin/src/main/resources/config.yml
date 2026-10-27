@@ -1,7 +1,7 @@
 # MyBoxMobs — configuration
 
 # Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
-config-version: 1
+config-version: 2
 #
 # Colours in every text: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>, <rainbow>, <#hex>)
 # and PlaceholderAPI placeholders, all in the same line.
@@ -22,8 +22,20 @@ multiplier:
     gem: ''
 
 announce:
-  # One line per rank of the top damage list, replaces a line that only contains %top%
-  top-line: '&7  #%rank% &f%player% &8- &e%damage% sát thương'
+  # A line that only contains %top% becomes the damage leaderboard (top damage mode only):
+  # the header lines, then one top-line per rank. A line starting with <center> is centred in the chat.
+  top-header:
+    - ''
+    - '<center>&#FFD166Bảng xếp hạng sát thương'
+    - '<center>%mob%'
+    - ''
+  # %color% = colour of the rank (rank-colors: top 1, top 2, top 3...; other ranks rank-color-others)
+  top-line: '<center>%color%(%rank%) &f%player% &8- &#FFB38A%damage% &7sát thương'
+  rank-colors:
+    - '&#FFD700'
+    - '&#C0C0C0'
+    - '&#CD7F32'
+  rank-color-others: '&7'
   # Lines given to a newly created mob (each mob then keeps its own copy, edit them in the GUI)
   default-lines:
     spawn:
@@ -32,7 +44,7 @@ announce:
       - ''
     death:
       - ''
-      - '%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục'
+      - '<center>%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục'
       - '%top%'
       - ''
     despawn:
@@ -40,17 +52,20 @@ announce:
 
 hologram:
   # Height above the spawner location / above the altar block
-  spawner-height: 2.5
+  spawner-height: 3.2
   altar-height: 2.3
-  # Default lines of a new spawner. %mob% %countdown% %alive% %max%
+  # Default lines of a new spawner. %mob% %health% %damage% %countdown% %alive% %max%
+  # A line starting with # is a DecentHolograms line type: #ICON: SPAWNER = a floating, spinning empty spawner
   spawner-lines:
+    - '#ICON: SPAWNER'
     - '%mob%'
-    - '&#BFC7D5Xuất hiện sau: &f%countdown%'
-    - '&#BFC7D5Đang sống: &f%alive%&8/&f%max%'
+    - '&#FF6B6B❤ &#FFC9C9%health%  &8|  &#FFB86B⚔ &#FFE3C2%damage%'
+    - '&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%'
+    - '&#B4F8C8Đang sống: &#E6FFEE%alive%&8/&#E6FFEE%max%'
   # Default lines of a new altar. %mob% %item% %amount%
   altar-lines:
     - '&#F7A4C0Triệu hồi %mob%'
-    - '&#BFC7D5Yêu cầu: %item% &8x&f%amount%'
+    - '&#BFC7D5Yêu cầu: &fx%amount% %item%'
     - '&8[&#7CFC9AChuột phải với vật phẩm để triệu hồi&8]'
   # Shown instead while an altar cools down (same for every altar). %mob% %countdown%
   altar-cooldown-lines:

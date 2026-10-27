@@ -26,6 +26,8 @@ public final class LiveMob {
     public @Nullable UUID lastHitter;
     /** Set once the mob died or was removed, so the other listener does not handle it again. */
     public boolean ended;
+    /** Last cast time (epoch millis) per skill entry of the definition: timers and cooldowns. */
+    public final Map<Object, Long> lastCast = new HashMap<>();
 
     public LiveMob(Entity entity, @Nullable MobDefinition def, String id, String origin, @Nullable UUID summoner,
                    long now) {

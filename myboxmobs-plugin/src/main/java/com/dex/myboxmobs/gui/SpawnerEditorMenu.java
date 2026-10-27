@@ -73,7 +73,8 @@ public final class SpawnerEditorMenu extends Menu {
                 .action("Chuột trái để bật/tắt").secondary("Chuột phải để sửa nội dung").build()), click -> {
             if (click.isRightClick()) {
                 new LinesMenu(plugin, player, "&8Holo spawner &8[" + d.id + "&8]", d.holoLines,
-                        List.of("%mob% tên mob", "%countdown% đếm ngược", "%alive% đang sống", "%max% tối đa"),
+                        List.of("%mob% tên mob", "%health% máu", "%damage% sát thương", "%countdown% đếm ngược",
+                                "%alive% đang sống", "%max% tối đa", "#ICON: SPAWNER (dòng icon xoay)"),
                         this::save, () -> player.sendMessage(com.dex.myboxmobs.text.Text.parse(String.join("\n", d.holoLines))),
                         this).open();
                 return;

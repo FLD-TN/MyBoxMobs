@@ -51,7 +51,20 @@ public final class SpawnerService {
                 if (s != null) spawners.put(id, SpawnerDef.load(id, s));
             }
         }
+        // 0.5.0: spawners still on the old default hologram get the new one
+        boolean migrated = false;
+        for (SpawnerDef d : spawners.values()) {
+            if (d.holoLines.equals(OLD_DEFAULT_HOLO)) {
+                d.holoLines.clear();
+                d.holoLines.addAll(plugin.settings().spawnerHoloLines);
+                migrated = true;
+            }
+        }
+        if (migrated) save();
     }
+
+    private static final List<String> OLD_DEFAULT_HOLO = List.of("%mob%", "&#BFC7D5Xuất hiện sau: &f%countdown%",
+            "&#BFC7D5Đang sống: &f%alive%&8/&f%max%");
 
     public void save() {
         YamlConfiguration y = new YamlConfiguration();
@@ -200,12 +213,43 @@ public final class SpawnerService {
             countdown = Format.duration(Math.max(0, (d.nextWaveAt - now + 999) / 1000));
         }
         String mob = d.mobs.isEmpty() ? "?" : mobName(d.mobs.get(0).mob);
+        String[] stats = d.mobs.isEmpty() ? new String[]{"?", "?"} : mobStats(d.mobs.get(0).mob);
         List<String> lines = new ArrayList<>();
         for (String line : d.holoLines) {
-            lines.add(Text.legacy(Messages.apply(line, "mob", mob, "countdown", countdown, "alive", String.valueOf(alive),
-                    "max", String.valueOf(d.maxAlive), "id", d.id)));
+            String filled = Messages.apply(line, "mob", mob, "countdown", countdown, "alive", String.valueOf(alive),
+                    "max", String.valueOf(d.maxAlive), "id", d.id, "health", stats[0], "damage", stats[1]);
+            // DecentHolograms line types (#ICON: SPAWNER, #HEAD: ..., #ENTITY: ...) are passed through untouched
+            lines.add(filled.startsWith("#") ? filled : Text.legacy(filled));
         }
         plugin.holograms().show(HOLO + d.id, loc.clone().add(0, plugin.settings().spawnerHoloHeight, 0), lines);
+    }
+
+    /** Max health and melee damage shown in the hologram: the MyBoxMobs override, else the MythicMobs value. */
+    public String[] mobStats(MobRef ref) {
+        double health = Double.NaN;
+        double damage = Double.NaN;
+        String mythicId = null;
+        if (ref.mythic()) {
+            mythicId = ref.id();
+        } else {
+            MobDefinition def = plugin.registry().get(ref.id());
+            if (def != null) {
+                Double h = def.stats.get(MobDefinition.Stat.HEALTH);
+                Double dmg = def.stats.get(MobDefinition.Stat.DAMAGE);
+                if (h != null) health = h;
+                if (dmg != null) damage = dmg;
+                if (def.source == MobDefinition.Source.MYTHIC) mythicId = def.mythicId;
+            }
+        }
+        if (mythicId != null) {
+            if (Double.isNaN(health)) health = plugin.mythic().baseHealth(mythicId);
+            if (Double.isNaN(damage)) damage = plugin.mythic().baseDamage(mythicId);
+        }
+        Messages m = plugin.messages();
+        String hp = Double.isNaN(health) ? m.raw("spawner.stat-default") : Format.number(Math.round(health));
+        String dmg = Double.isNaN(damage) ? m.raw("spawner.stat-default")
+                : damage <= 0 ? m.raw("spawner.damage-skills") : Format.decimal(damage);
+        return new String[]{hp, dmg};
     }
 
     public String mobName(MobRef ref) {
