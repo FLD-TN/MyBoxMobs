@@ -21,6 +21,7 @@ public final class MobRegistry {
     private List<String> defaultSpawn = List.of();
     private List<String> defaultDeath = List.of();
     private List<String> defaultDespawn = List.of();
+    private List<String> defaultSpawnerHolo = List.of();
 
     private static final List<String> OLD_DEFAULT_DEATH = List.of("",
             "%mob% &#BFC7D5đã bị &#7CFC9A%killer% &#BFC7D5hạ gục", "%top%", "");
@@ -34,6 +35,7 @@ public final class MobRegistry {
         defaultSpawn = config.getStringList("announce.default-lines.spawn");
         defaultDeath = config.getStringList("announce.default-lines.death");
         defaultDespawn = config.getStringList("announce.default-lines.despawn");
+        defaultSpawnerHolo = config.getStringList("hologram.spawner-lines");
         mobs.clear();
         if (!folder.isDirectory() && !folder.mkdirs()) {
             log.warning("Could not create " + folder);
@@ -67,7 +69,9 @@ public final class MobRegistry {
 
     /** A new definition with the default announcement lines of config.yml (not saved yet). */
     public MobDefinition blank(String id, MobDefinition.Source source) {
-        return new MobDefinition(id, source, defaultSpawn, defaultDeath, defaultDespawn);
+        MobDefinition def = new MobDefinition(id, source, defaultSpawn, defaultDeath, defaultDespawn);
+        def.spawnerHolo.addAll(defaultSpawnerHolo);
+        return def;
     }
 
     public @Nullable MobDefinition get(String id) {

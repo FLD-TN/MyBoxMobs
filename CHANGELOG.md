@@ -1,5 +1,13 @@
 # MyBoxMobs changelog
 
+## 0.5.3 (2026-10-27)
+
+- Spawner hologram per mob: every mob has its own template (mob editor > Holo spawner, Shift + right click
+  resets it to the config default); a spawner shows the template of the mob it spawns (raw MythicMobs mobs use
+  the config default). The per-spawner lines of spawners.yml are no longer used.
+- New default layout: [mob name], blank, health | damage, "Đang tồn tại: x/x quái", blank, "Xuất hiện sau",
+  spinning spawner icon at the bottom. config.yml goes to config-version 4.
+
 ## 0.5.2 (2026-10-27)
 
 - Spawner hologram: damage is the icon and the number only, like health (no "sát thương" word). Health / damage

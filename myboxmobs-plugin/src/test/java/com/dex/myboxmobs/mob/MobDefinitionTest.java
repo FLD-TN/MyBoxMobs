@@ -116,4 +116,20 @@ class MobDefinitionTest {
         assertEquals(4, b.seconds);
         assertEquals(35.0, b.chance);
     }
+
+    @Test
+    void spawnerHologramRoundTripAndDefault() throws InvalidConfigurationException {
+        MobDefinition defaults = blank("defaults", MobDefinition.Source.CUSTOM);
+        defaults.spawnerHolo.addAll(List.of("&8[%mob%&8]", "", "#ICON: SPAWNER"));
+        MobDefinition d = blank("x", MobDefinition.Source.CUSTOM);
+        d.spawnerHolo.addAll(List.of("&a%mob%", "%countdown%"));
+        YamlConfiguration y = new YamlConfiguration();
+        y.loadFromString(d.toYaml().saveToString());
+        assertEquals(List.of("&a%mob%", "%countdown%"), MobDefinition.fromYaml("x", y, defaults).spawnerHolo);
+        YamlConfiguration old = new YamlConfiguration();
+        old.loadFromString("source: CUSTOM
+");
+        assertEquals(defaults.spawnerHolo, MobDefinition.fromYaml("old", old, defaults).spawnerHolo,
+                "mob files without a template get the config default");
+    }
 }

@@ -115,6 +115,19 @@ public final class MobEditorMenu extends Menu {
                 .desc("Dùng lại skill có sẵn trong MythicMobs cho mob này: chọn skill, khi nào dùng và nhắm vào ai.")
                 .section("Thông tin:").row("Số skill", String.valueOf(def.skills.size()))
                 .action("Chuột trái để mở").build()), click -> new SkillsMenu(plugin, player, def, this).open());
+        set(42, icon(Material.SPAWNER, Palette.SPAWNER + "Holo spawner", Lore.of()
+                .desc("Mẫu holo của các spawner spawn ra mob này. Mỗi mob một mẫu riêng.")
+                .section("Thông tin:").row("Số dòng", String.valueOf(def.spawnerHolo.size()))
+                .action("Chuột trái để sửa").danger("Shift + chuột phải để về mẫu mặc định").build()), click -> {
+            if (click == org.bukkit.event.inventory.ClickType.SHIFT_RIGHT) {
+                def.spawnerHolo.clear();
+                def.spawnerHolo.addAll(plugin.settings().spawnerHoloLines);
+                save();
+                refresh();
+                return;
+            }
+            openSpawnerHolo(plugin, player, def, this);
+        });
         // row 6: actions
         set(45, icon(Material.ARROW, "&#BFC7D5Quay lại", Lore.of().action("Chuột trái để quay lại").build()),
                 click -> Gui.mobs(plugin, player));
@@ -134,6 +147,19 @@ public final class MobEditorMenu extends Menu {
             Gui.mobs(plugin, player);
         }, this::open).open());
         fill(0);
+    }
+
+    /** Editor of a mob's spawner hologram template (also opened from the spawner menu). */
+    static void openSpawnerHolo(MyBoxMobsPlugin plugin, Player player, MobDefinition def, Menu parent) {
+        new LinesMenu(plugin, player, "&8Holo spawner &8[" + def.id + "&8]", def.spawnerHolo,
+                List.of("%mob% tên mob", "%health% máu", "%damage% sát thương", "%countdown% đếm ngược",
+                        "%alive% đang tồn tại", "%max% tối đa", "#ICON: SPAWNER (lồng spawner xoay)"),
+                () -> plugin.registry().save(def),
+                () -> {
+                    for (String line : def.spawnerHolo) {
+                        if (!line.startsWith("#")) player.sendMessage(com.dex.myboxmobs.text.Text.parse(line));
+                    }
+                }, parent).open();
     }
 
     private void stat(int slot, Stat stat, Material material, String name, String desc, double min, double max) {

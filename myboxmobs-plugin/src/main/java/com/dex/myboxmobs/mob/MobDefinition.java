@@ -64,6 +64,8 @@ public final class MobDefinition {
     public final List<RewardEntry> killerRewards = new ArrayList<>();
     public final List<TopRank> topRanks = new ArrayList<>();
     public final List<SkillEntry> skills = new ArrayList<>();
+    /** Hologram of the spawners that spawn this mob (one template per mob, default from config.yml). */
+    public final List<String> spawnerHolo = new ArrayList<>();
     public final Announcement spawn;
     public final Announcement death;
     public final Announcement despawn;
@@ -106,6 +108,7 @@ public final class MobDefinition {
         List<Map<String, Object>> skillList = new ArrayList<>();
         for (SkillEntry e : skills) skillList.add(e.serialize());
         y.set("skills", skillList);
+        y.set("spawner-hologram", spawnerHolo);
         writeAnnouncement(y, "spawn", spawn);
         writeAnnouncement(y, "death", death);
         writeAnnouncement(y, "despawn", despawn);
@@ -167,6 +170,7 @@ public final class MobDefinition {
             SkillEntry e = SkillEntry.deserialize(m);
             if (e != null) d.skills.add(e);
         }
+        d.spawnerHolo.addAll(y.isSet("spawner-hologram") ? y.getStringList("spawner-hologram") : defaults.spawnerHolo);
         d.spawn.enabled = y.getBoolean("announce.spawn.enabled", false);
         d.death.enabled = y.getBoolean("announce.death.enabled", false);
         d.despawn.enabled = y.getBoolean("announce.despawn.enabled", false);

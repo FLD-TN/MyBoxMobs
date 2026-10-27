@@ -51,23 +51,7 @@ public final class SpawnerService {
                 if (s != null) spawners.put(id, SpawnerDef.load(id, s));
             }
         }
-        // spawners still on an older default hologram (0.4 / 0.5.0) get the current one
-        boolean migrated = false;
-        for (SpawnerDef d : spawners.values()) {
-            if (d.holoLines.equals(OLD_DEFAULT_HOLO) || d.holoLines.equals(DEFAULT_HOLO_050)) {
-                d.holoLines.clear();
-                d.holoLines.addAll(plugin.settings().spawnerHoloLines);
-                migrated = true;
-            }
-        }
-        if (migrated) save();
     }
-
-    private static final List<String> OLD_DEFAULT_HOLO = List.of("%mob%", "&#BFC7D5Xuất hiện sau: &f%countdown%",
-            "&#BFC7D5Đang sống: &f%alive%&8/&f%max%");
-    private static final List<String> DEFAULT_HOLO_050 = List.of("#ICON: SPAWNER", "%mob%",
-            "&#FF6B6B❤ &#FFC9C9%health%  &8|  &#FFB86B⚔ &#FFE3C2%damage%", "&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%",
-            "&#B4F8C8Đang sống: &#E6FFEE%alive%&8/&#E6FFEE%max%");
 
     public void save() {
         YamlConfiguration y = new YamlConfiguration();
@@ -89,7 +73,7 @@ public final class SpawnerService {
     }
 
     public SpawnerDef create(String id, Location at) {
-        SpawnerDef d = new SpawnerDef(id.toLowerCase(), at, plugin.settings().spawnerHoloLines);
+        SpawnerDef d = new SpawnerDef(id.toLowerCase(), at);
         spawners.put(d.id, d);
         save();
         return d;
@@ -219,7 +203,7 @@ public final class SpawnerService {
         String mob = d.mobs.isEmpty() ? "?" : mobName(d.mobs.get(0).mob);
         String[] stats = d.mobs.isEmpty() ? new String[]{"?", "?"} : mobStats(d.mobs.get(0).mob);
         List<String> lines = new ArrayList<>();
-        for (String line : d.holoLines) {
+        for (String line : holoTemplate(d)) {
             String filled = Messages.apply(line, "mob", mob, "countdown", countdown, "alive", String.valueOf(alive),
                     "max", String.valueOf(d.maxAlive), "id", d.id, "health", stats[0], "damage", stats[1]);
             // DecentHolograms line types (#ICON: SPAWNER, #HEAD: ..., #ENTITY: ...) are passed through untouched
@@ -261,6 +245,15 @@ public final class SpawnerService {
         String hp = Double.isNaN(health) ? unknown : Format.number(Math.round(health));
         String dmg = Double.isNaN(damage) ? unknown : Format.decimal(Math.max(0, damage));
         return new String[]{hp, dmg};
+    }
+
+    /** The hologram template of the spawner's first MyBoxMobs mob; raw MythicMobs mobs use the config default. */
+    public List<String> holoTemplate(SpawnerDef d) {
+        if (!d.mobs.isEmpty() && !d.mobs.get(0).mob.mythic()) {
+            MobDefinition def = plugin.registry().get(d.mobs.get(0).mob.id());
+            if (def != null && !def.spawnerHolo.isEmpty()) return def.spawnerHolo;
+        }
+        return plugin.settings().spawnerHoloLines;
     }
 
     public String mobName(MobRef ref) {

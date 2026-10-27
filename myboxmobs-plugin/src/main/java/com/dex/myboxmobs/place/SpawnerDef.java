@@ -41,17 +41,15 @@ public final class SpawnerDef {
     public double leash = 24;
     public boolean keepChunkLoaded;
     public boolean hologram = true;
-    public final List<String> holoLines = new ArrayList<>();
     public boolean enabled = true;
 
     // runtime, not saved
     public long nextWaveAt;
     public boolean active;
 
-    public SpawnerDef(String id, Location at, List<String> defaultHolo) {
+    public SpawnerDef(String id, Location at) {
         this(id);
         setLocation(at);
-        holoLines.addAll(defaultHolo);
     }
 
     private SpawnerDef(String id) {
@@ -92,7 +90,6 @@ public final class SpawnerDef {
         s.set("leash", leash);
         s.set("keep-chunk-loaded", keepChunkLoaded);
         s.set("hologram.enabled", hologram);
-        s.set("hologram.lines", holoLines);
         s.set("enabled", enabled);
     }
 
@@ -120,7 +117,6 @@ public final class SpawnerDef {
         d.leash = Math.max(0, s.getDouble("leash", 24));
         d.keepChunkLoaded = s.getBoolean("keep-chunk-loaded", false);
         d.hologram = s.getBoolean("hologram.enabled", true);
-        d.holoLines.addAll(s.getStringList("hologram.lines"));
         d.enabled = s.getBoolean("enabled", true);
         return d;
     }

@@ -1,7 +1,7 @@
 # MyBoxMobs — configuration
 
 # Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
-config-version: 3
+config-version: 4
 #
 # Colours in every text: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>, <rainbow>, <#hex>)
 # and PlaceholderAPI placeholders, all in the same line.
@@ -54,14 +54,17 @@ hologram:
   # Height above the spawner location / above the altar block
   spawner-height: 3.2
   altar-height: 2.3
-  # Default lines of a new spawner. %mob% %health% %damage% %countdown% %alive% %max%
+  # Default spawner hologram of a new mob. Every mob keeps its own copy (mob editor > Holo spawner), the spawner
+  # shows the template of the mob it spawns. %mob% %health% %damage% %countdown% %alive% %max%
   # A line starting with # is a DecentHolograms line type: #ICON: SPAWNER = a floating, spinning empty spawner
   spawner-lines:
-    - '#ICON: SPAWNER'
-    - '%mob%'
-    - '&#FF6B6B❤ &#FFC9C9%health%  &8|  &#FFB86B⚔ &#FFE3C2%damage%'
-    - '&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%'
+    - '&8[%mob%&8]'
+    - ''
+    - '&#FF6B6B❤ &#FFC9C9%health%  &7|  &#FFB86B⚔ &#FFE3C2%damage%'
     - '&#B4F8C8Đang tồn tại: &#7CFC9A%alive%&f/&#FFD166%max% &#B4F8C8quái'
+    - ''
+    - '&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%'
+    - '#ICON: SPAWNER'
   # Default lines of a new altar. %mob% %item% %amount%
   altar-lines:
     - '&#F7A4C0Triệu hồi %mob%'

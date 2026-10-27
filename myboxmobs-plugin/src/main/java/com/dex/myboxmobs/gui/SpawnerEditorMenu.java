@@ -67,16 +67,17 @@ public final class SpawnerEditorMenu extends Menu {
             d.keepChunkLoaded = !d.keepChunkLoaded;
             changed();
         });
+        com.dex.myboxmobs.mob.MobDefinition holoMob = d.mobs.isEmpty() || d.mobs.get(0).mob.mythic() ? null
+                : plugin.registry().get(d.mobs.get(0).mob.id());
         set(21, icon(Material.NAME_TAG, Palette.SPAWNER + "Hologram", Lore.of()
+                .desc("Nội dung holo lấy theo mẫu của mob, mỗi mob một mẫu riêng.")
                 .section("Thông tin:").row("Hiện tại", Palette.onOff(d.hologram))
+                .row("Mẫu holo", holoMob == null ? "mặc định (config.yml)" : "của mob " + holoMob.id)
                 .row("DecentHolograms", plugin.holograms().available() ? "có" : "&#FF6B6Bchưa cài")
-                .action("Chuột trái để bật/tắt").secondary("Chuột phải để sửa nội dung").build()), click -> {
+                .action("Chuột trái để bật/tắt").secondary(holoMob == null ? "Mob MythicMobs gốc dùng mẫu mặc định"
+                        : "Chuột phải để sửa mẫu holo của mob").build()), click -> {
             if (click.isRightClick()) {
-                new LinesMenu(plugin, player, "&8Holo spawner &8[" + d.id + "&8]", d.holoLines,
-                        List.of("%mob% tên mob", "%health% máu", "%damage% sát thương", "%countdown% đếm ngược",
-                                "%alive% đang sống", "%max% tối đa", "#ICON: SPAWNER (dòng icon xoay)"),
-                        this::save, () -> player.sendMessage(com.dex.myboxmobs.text.Text.parse(String.join("\n", d.holoLines))),
-                        this).open();
+                if (holoMob != null) MobEditorMenu.openSpawnerHolo(plugin, player, holoMob, this);
                 return;
             }
             d.hologram = !d.hologram;
