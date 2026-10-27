@@ -81,10 +81,15 @@ public final class Announcer {
         for (Map.Entry<String, Double> e : damage.entrySet()) {
             if (++rank > ranks) break;
             String color = rank <= s.rankColors.size() ? s.rankColors.get(rank - 1) : s.rankColorOthers;
-            out.add(Messages.apply(s.topLine, "color", color, "rank", String.valueOf(rank), "player", e.getKey(),
-                    "damage", Format.number(Math.round(e.getValue()))));
+            out.add(Messages.apply(s.topLine, "color", color, "icon", rankIcon(rank), "rank", String.valueOf(rank),
+                    "player", e.getKey(), "damage", Format.number(Math.round(e.getValue()))));
         }
         return out;
+    }
+
+    /** ① ② ③ ... ⑳ like the CustomFishing competition, "(21)" after that. */
+    static String rankIcon(int rank) {
+        return rank >= 1 && rank <= 20 ? new String(Character.toChars(0x2460 + rank - 1)) : "(" + rank + ")";
     }
 
     private static String playerName(UUID uuid) {

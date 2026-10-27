@@ -42,9 +42,12 @@ public final class SpawnerDef {
     public boolean keepChunkLoaded;
     public boolean hologram = true;
     public boolean enabled = true;
+    /** Clock times "HH:mm" (server timezone of config.yml); not empty = spawn at these times instead of the interval. */
+    public final List<String> times = new ArrayList<>();
+    /** Epoch millis of the next wave, saved so a restart keeps the countdown; 0 = not planned yet. */
+    public long nextWaveAt;
 
     // runtime, not saved
-    public long nextWaveAt;
     public boolean active;
 
     public SpawnerDef(String id, Location at) {
@@ -91,6 +94,8 @@ public final class SpawnerDef {
         s.set("keep-chunk-loaded", keepChunkLoaded);
         s.set("hologram.enabled", hologram);
         s.set("enabled", enabled);
+        s.set("times", times);
+        s.set("next-wave-at", nextWaveAt);
     }
 
     public static SpawnerDef load(String id, ConfigurationSection s) {
@@ -118,6 +123,8 @@ public final class SpawnerDef {
         d.keepChunkLoaded = s.getBoolean("keep-chunk-loaded", false);
         d.hologram = s.getBoolean("hologram.enabled", true);
         d.enabled = s.getBoolean("enabled", true);
+        d.times.addAll(s.getStringList("times"));
+        d.nextWaveAt = s.getLong("next-wave-at", 0);
         return d;
     }
 }

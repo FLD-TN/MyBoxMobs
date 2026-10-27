@@ -87,13 +87,6 @@ public final class AltarEditorMenu extends Menu {
                 plugin.altars().save();
             });
         });
-        set(14, icon(Material.HOPPER_MINECART, Palette.ALTAR + "Trả lại vật phẩm", Lore.of()
-                .desc("Boss hết thời gian tồn tại mà chưa bị giết thì trả vật phẩm cho người triệu hồi.")
-                .section("Thông tin:").row("Hiện tại", Palette.onOff(d.refundOnDespawn))
-                .action("Chuột trái để bật/tắt").build()), click -> {
-            d.refundOnDespawn = !d.refundOnDespawn;
-            changed();
-        });
         set(15, icon(Material.NAME_TAG, Palette.ALTAR + "Hologram", Lore.of()
                 .section("Thông tin:").row("Số dòng", String.valueOf(d.holoLines.size()))
                 .row("DecentHolograms", plugin.holograms().available() ? "có" : "&#FF6B6Bchưa cài")

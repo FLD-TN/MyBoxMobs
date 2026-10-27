@@ -1,5 +1,19 @@
 # MyBoxMobs changelog
 
+## 0.6.0 (2026-10-27)
+
+- Mobs survive chunk unloads and restarts: managed mobs are saved with the world like vanilla mobs (spawn time,
+  origin and summoner in their tags) and are tracked again when their chunk loads; lifetime keeps running from
+  the original spawn. The damage table starts empty after a reload. (Before: removed on unload / restart.)
+- Spawner countdown is saved (next-wave-at in spawners.yml) and keeps running without players; a due wave waits
+  until the spawner is active. New schedule mode: spawn at clock times ("12:00 20:30", timezone in config.yml);
+  a time missed while the server was off is skipped.
+- Altars never give the summoning item back (owner decision). The altar's living boss is saved; the altar opens
+  again when the boss dies, despawns, or is gone for 5 s while its last chunk is loaded.
+- Damage leaderboard lines like the CustomFishing competition: "① Duy — gây ra 12.500 sát thương", colours
+  #FCD34D / #E2E8F0 / #D97706, ranks after 3 in &7, placeholder %icon% (① to ⑳).
+- config.yml config-version 7, messages.yml config-version 5.
+
 ## 0.5.5 (2026-10-27)
 
 - Spawner hologram default: no blank line between "Đang tồn tại" and "Xuất hiện sau", a blank line before the

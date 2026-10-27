@@ -103,9 +103,9 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         }
         Bukkit.getServicesManager().register(MyBoxMobsService.class, new ServiceImpl(this), this, ServicePriority.Normal);
 
-        int orphans = 0;
-        for (World w : Bukkit.getWorlds()) orphans += mobs.removeOrphans(w.getEntities());
-        if (orphans > 0) getLogger().info("Removed " + orphans + " leftover MyBoxMobs mobs");
+        int adopted = 0;
+        for (World w : Bukkit.getWorlds()) adopted += mobs.adopt(w.getEntities());
+        if (adopted > 0) getLogger().info("Took back " + adopted + " MyBoxMobs mobs still in the world");
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             mobs.tick();
             spawners.tick();

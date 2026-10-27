@@ -1,7 +1,7 @@
 # MyBoxMobs — messages
 
 # Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
-config-version: 4
+config-version: 5
 #
 # Colours: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>), PlaceholderAPI
 # Symbols: ✔ success, ✘ error, (!) warning. One line per message, no trailing full stop
@@ -65,6 +65,7 @@ input:
   amount-required: '&#FFD166Nhập số lượng vật phẩm yêu cầu'
   cooldown: '&#FFD166Nhập thời gian chờ (giây), &f0 &#FFD166là không chờ'
   skill-seconds: '&#FFD166Nhập số giây'
+  schedule: '&#FFD166Nhập các giờ spawn, cách nhau bằng dấu cách, ví dụ &f12:00 20:30'
 
 gui:
   select-slot-first: '&#FFD166(!) Hãy chọn một ô trang bị trước'
@@ -94,6 +95,7 @@ spawner:
   waiting: '&#BFC7D5chờ người chơi tới gần'
   # %health% / %damage% of the hologram when the value is not known yet (before the first spawn)
   stat-default: '?'
+  schedule-invalid: '&#FF6B6B✘ Giờ không hợp lệ: &f%time% &#FF6B6B(dùng dạng 20:30)'
 
 altar:
   created: '&#7CFC9A✔ Đã tạo bàn triệu hồi &f%id%&#7CFC9A, mở &f/mbm &#7CFC9Ađể đặt vật phẩm yêu cầu'
@@ -114,7 +116,6 @@ altar:
   requirement-cleared: '&#FFD166(!) Đã bỏ vật phẩm yêu cầu, bàn chưa dùng được cho tới khi đặt lại'
   failed: '&#FF6B6B✘ Không triệu hồi được, hãy báo quản trị viên'
   summoned: '&#7CFC9A✔ Bạn đã triệu hồi %mob%'
-  refunded: '&#FFD166(!) Boss đã rời đi, vật phẩm triệu hồi được trả lại cho bạn'
   protected: '&#FF6B6B✘ Không thể phá bàn triệu hồi'
 
 reward:

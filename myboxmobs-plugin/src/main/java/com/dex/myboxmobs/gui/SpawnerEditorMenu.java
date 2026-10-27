@@ -40,8 +40,11 @@ public final class SpawnerEditorMenu extends Menu {
         }
         set(10, icon(Material.ZOMBIE_HEAD, Palette.SPAWNER + "Mob spawn ra", mobs.action("Chuột trái để chỉnh").build()),
                 click -> new SpawnerMobsMenu(plugin, player, d, this).open());
-        number(11, Material.CLOCK, "Thời gian giữa các đợt", Format.duration(d.intervalSeconds), "input.interval",
-                1, 86400, v -> d.intervalSeconds = (int) v);
+        number(11, Material.CLOCK, "Thời gian giữa các đợt", d.times.isEmpty() ? Format.duration(d.intervalSeconds)
+                : "không dùng (đang theo lịch giờ)", "input.interval", 1, 604800, v -> {
+                    d.intervalSeconds = (int) v;
+                    d.nextWaveAt = 0;
+                });
         number(12, Material.EGG, "Số mob mỗi đợt", String.valueOf(d.amount), "input.amount-wave", 1, 100,
                 v -> d.amount = (int) v);
         number(13, Material.CHAIN, "Tối đa sống cùng lúc", String.valueOf(d.maxAlive), "input.max-alive", 1, 500,
@@ -104,6 +107,41 @@ public final class SpawnerEditorMenu extends Menu {
                 player.closeInventory();
                 player.teleport(at);
             }
+        });
+        Lore schedule = Lore.of().desc("Spawn đúng các giờ trong ngày (giờ Việt Nam) thay vì đếm ngược. Giờ bị lỡ lúc server tắt sẽ bỏ qua.")
+                .section("Thông tin:");
+        if (d.times.isEmpty()) schedule.row("Lịch", "không, đang đếm ngược");
+        else schedule.row("Lịch", String.join(", ", d.times));
+        if (d.nextWaveAt > 0) {
+            schedule.row("Đợt tiếp theo", java.time.Instant.ofEpochMilli(d.nextWaveAt).atZone(plugin.settings().timezone)
+                    .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM")));
+        }
+        set(24, icon(Material.RECOVERY_COMPASS, Palette.SPAWNER + "Lịch giờ", schedule
+                .action("Chuột trái để nhập giờ").danger("Chuột phải để bỏ lịch (về đếm ngược)").build()), click -> {
+            if (click.isRightClick()) {
+                d.times.clear();
+                d.nextWaveAt = 0;
+                changed();
+                return;
+            }
+            ask("input.schedule", text -> {
+                java.util.List<String> times = new java.util.ArrayList<>();
+                for (String token : text.split("[,;\\s]+")) {
+                    if (token.isBlank()) continue;
+                    java.time.LocalTime time = com.dex.myboxmobs.place.SpawnerService.parseTime(token);
+                    if (time == null) {
+                        plugin.messages().send(player, "spawner.schedule-invalid", "time", token);
+                        return;
+                    }
+                    String norm = String.format("%02d:%02d", time.getHour(), time.getMinute());
+                    if (!times.contains(norm)) times.add(norm);
+                }
+                times.sort(null);
+                d.times.clear();
+                d.times.addAll(times);
+                d.nextWaveAt = 0;
+                save();
+            });
         });
         set(45, icon(Material.ARROW, "&#BFC7D5Quay lại", Lore.of().action("Chuột trái để quay lại").build()),
                 click -> Gui.spawners(plugin, player));

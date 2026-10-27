@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.plugin.Plugin;
 
 /** Damage tracking, deaths, MythicMobs drops and removals of tracked mobs. */
@@ -91,6 +92,11 @@ public final class MobListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntitiesLoad(EntitiesLoadEvent e) {
-        mobs.removeOrphans(e.getEntities());
+        mobs.adopt(e.getEntities());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntitiesUnload(EntitiesUnloadEvent e) {
+        mobs.unloaded(e.getEntities());
     }
 }

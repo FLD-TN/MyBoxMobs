@@ -139,6 +139,10 @@ public final class AltarService implements MobService.EndListener {
         inv.setItemInMainHand(hand.getAmount() <= 0 ? null : hand);
         d.boss = boss.uuid();
         d.summoner = p.getUniqueId();
+        d.bossWorld = spawnAt.getWorld().getName();
+        d.bossX = spawnAt.getBlockX();
+        d.bossZ = spawnAt.getBlockZ();
+        save();
         plugin.holograms().remove(HOLO + d.id);
         m.send(p, "altar.summoned", "mob", plugin.spawners().mobName(d.mob));
     }
@@ -151,30 +155,55 @@ public final class AltarService implements MobService.EndListener {
         return plugin.mobs().spawn(def, at, origin, summoner.getUniqueId(), true);
     }
 
+    /**
+     * The boss left (killed, lifetime over, removed by an admin): the altar opens again after its cooldown.
+     * The summoning item is never given back (owner decision).
+     */
     @Override
     public void onEnd(LiveMob mob, boolean killed) {
         if (!mob.origin.startsWith("altar:")) return;
         AltarDef d = get(mob.origin.substring(6));
         if (d == null || !mob.uuid().equals(d.boss)) return;
+        free(d);
+    }
+
+    private void free(AltarDef d) {
         d.boss = null;
-        if (!killed && d.refundOnDespawn && d.requirement != null && d.summoner != null) {
-            Player p = Bukkit.getPlayer(d.summoner);
-            if (p != null) {
-                for (ItemStack left : p.getInventory().addItem(d.requirement.clone()).values()) {
-                    p.getWorld().dropItemNaturally(p.getLocation(), left);
-                }
-                plugin.messages().send(p, "altar.refunded");
-            }
-        }
         d.summoner = null;
-        if (d.cooldownSeconds > 0) {
-            d.cooldownUntil = System.currentTimeMillis() + d.cooldownSeconds * 1000L;
-            save();
+        d.bossWorld = null;
+        d.bossMissing = 0;
+        if (d.cooldownSeconds > 0) d.cooldownUntil = System.currentTimeMillis() + d.cooldownSeconds * 1000L;
+        save();
+    }
+
+    /**
+     * Follows each altar's boss: remembers where it is, and frees the altar when the boss is gone for good
+     * (its last chunk is loaded but the boss is not there for 5 seconds). An unloaded boss keeps the altar busy.
+     */
+    private void watchBosses() {
+        for (AltarDef d : altars.values()) {
+            if (d.boss == null) continue;
+            LiveMob mob = plugin.mobs().tracker().get(d.boss);
+            if (mob != null && mob.entity.isValid()) {
+                Location at = mob.entity.getLocation();
+                d.bossWorld = at.getWorld().getName();
+                d.bossX = at.getBlockX();
+                d.bossZ = at.getBlockZ();
+                d.bossMissing = 0;
+                continue;
+            }
+            org.bukkit.World w = d.bossWorld == null ? null : Bukkit.getWorld(d.bossWorld);
+            if (w == null || !w.isChunkLoaded(d.bossX >> 4, d.bossZ >> 4)) continue;
+            if (++d.bossMissing >= 5) {
+                plugin.getLogger().info("Altar " + d.id + ": its boss is gone, the altar is open again");
+                free(d);
+            }
         }
     }
 
     /** Every second: holograms (hidden while the boss lives, countdown during the cooldown). */
     public void tick() {
+        watchBosses();
         if (!plugin.holograms().available()) return;
         long now = System.currentTimeMillis();
         for (AltarDef d : altars.values()) {

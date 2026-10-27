@@ -1,13 +1,16 @@
 # MyBoxMobs — configuration
 
 # Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
-config-version: 6
+config-version: 7
 #
 # Colours in every text: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>, <rainbow>, <#hex>)
 # and PlaceholderAPI placeholders, all in the same line.
 
 # Highest max health a mob may get (keep it at or below settings.attribute.maxHealth.max in spigot.yml)
 max-health: 2048
+
+# Timezone of spawner schedules (clock times)
+timezone: 'Asia/Ho_Chi_Minh'
 
 # Reward multiplier for donor ranks (spec 5.4). Uses BoxCore boosts: add the type below to BoxCore config.yml
 # (types: mob: decimal: true ...), then give ranks the permission boxcore.boost.mob.<n>, e.g.
@@ -29,12 +32,13 @@ announce:
     - '<center>&#FFD166Bảng xếp hạng sát thương'
     - '<center>%mob%'
     - ''
-  # %color% = colour of the rank (rank-colors: top 1, top 2, top 3...; other ranks rank-color-others)
-  top-line: '<center>%color%(%rank%) &f%player% &8- &#FFB38A%damage% &7sát thương'
+  # %icon% = ① ② ③ ... ⑳ (like the CustomFishing competition), %rank% = 1 2 3..., %color% = colour of the rank
+  # (rank-colors: top 1, top 2, top 3...; other ranks rank-color-others), %damage% rounded with dot thousands
+  top-line: '<center>%color%%icon% %player% &#64748B— &#94A3B8gây ra %color%%damage% &#94A3B8sát thương'
   rank-colors:
-    - '&#FFD700'
-    - '&#C0C0C0'
-    - '&#CD7F32'
+    - '&#FCD34D'
+    - '&#E2E8F0'
+    - '&#D97706'
   rank-color-others: '&7'
   # Lines given to a newly created mob (each mob then keeps its own copy, edit them in the GUI)
   default-lines:

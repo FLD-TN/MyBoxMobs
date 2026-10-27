@@ -51,6 +51,11 @@ public final class SpawnerService {
                 if (s != null) spawners.put(id, SpawnerDef.load(id, s));
             }
         }
+        // a scheduled time missed while the server was off is skipped (the next one is planned)
+        long now = System.currentTimeMillis();
+        for (SpawnerDef d : spawners.values()) {
+            if (!d.times.isEmpty() && d.nextWaveAt > 0 && d.nextWaveAt < now - 60_000) d.nextWaveAt = 0;
+        }
     }
 
     public void save() {
@@ -95,6 +100,7 @@ public final class SpawnerService {
     /** Every second. */
     public void tick() {
         long now = System.currentTimeMillis();
+        boolean planned = false;
         Set<Chunk> wanted = new HashSet<>();
         for (SpawnerDef d : spawners.values()) {
             Location loc = d.location();
@@ -104,20 +110,47 @@ public final class SpawnerService {
             List<LiveMob> alive = plugin.mobs().tracker().byOrigin("spawner:" + d.id);
             d.active = d.enabled && loaded && !d.mobs.isEmpty()
                     && (d.mode == SpawnerDef.Mode.ALWAYS || playerNear(loc, d.activationRadius));
-            if (d.active) {
-                if (d.nextWaveAt == 0) d.nextWaveAt = now + d.intervalSeconds * 1000L;
-                if (now >= d.nextWaveAt) {
-                    wave(d, loc, alive.size());
-                    d.nextWaveAt = now + d.intervalSeconds * 1000L;
-                    alive = plugin.mobs().tracker().byOrigin("spawner:" + d.id);
-                }
-            } else {
-                d.nextWaveAt = 0;
+            // the countdown always runs (also without players); a due wave waits until the spawner is active
+            if (d.nextWaveAt == 0) {
+                d.nextWaveAt = nextWave(d, now);
+                planned = true;
+            }
+            if (d.active && now >= d.nextWaveAt) {
+                wave(d, loc, alive.size());
+                d.nextWaveAt = nextWave(d, now + 1000);
+                planned = true;
+                alive = plugin.mobs().tracker().byOrigin("spawner:" + d.id);
             }
             if (d.leash > 0) leash(alive, loc, d.leash);
             if (loaded) hologram(d, loc, alive.size(), now);
         }
         syncTickets(wanted);
+        if (planned) save();
+    }
+
+    /** Next wave time: the next clock time of the schedule, else now + interval. */
+    public long nextWave(SpawnerDef d, long from) {
+        if (d.times.isEmpty()) return from + d.intervalSeconds * 1000L;
+        java.time.ZoneId zone = plugin.settings().timezone;
+        java.time.ZonedDateTime base = java.time.Instant.ofEpochMilli(from).atZone(zone);
+        long best = Long.MAX_VALUE;
+        for (String t : d.times) {
+            java.time.LocalTime time = parseTime(t);
+            if (time == null) continue;
+            java.time.ZonedDateTime at = base.with(time).withSecond(0).withNano(0);
+            if (!at.isAfter(base)) at = at.plusDays(1);
+            best = Math.min(best, at.toInstant().toEpochMilli());
+        }
+        return best == Long.MAX_VALUE ? from + d.intervalSeconds * 1000L : best;
+    }
+
+    /** "8:00" / "20:30" -> time, null when invalid. */
+    public static @Nullable java.time.LocalTime parseTime(String raw) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(\\d{1,2}):(\\d{2})$").matcher(raw.strip());
+        if (!m.matches()) return null;
+        int h = Integer.parseInt(m.group(1));
+        int min = Integer.parseInt(m.group(2));
+        return h > 23 || min > 59 ? null : java.time.LocalTime.of(h, min);
     }
 
     private void wave(SpawnerDef d, Location center, int aliveCount) {
@@ -195,7 +228,7 @@ public final class SpawnerService {
             countdown = m.raw("spawner.paused");
         } else if (alive >= d.maxAlive) {
             countdown = m.raw("spawner.full");
-        } else if (!d.active) {
+        } else if (!d.active && now >= d.nextWaveAt) {
             countdown = m.raw("spawner.waiting");
         } else {
             countdown = Format.duration(Math.max(0, (d.nextWaveAt - now + 999) / 1000));

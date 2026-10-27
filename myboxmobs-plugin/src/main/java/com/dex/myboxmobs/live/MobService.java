@@ -40,12 +40,16 @@ public final class MobService {
     private final Tracker tracker = new Tracker();
     private final NamespacedKey defKey;
     private final NamespacedKey originKey;
+    private final NamespacedKey spawnedKey;
+    private final NamespacedKey summonerKey;
     private final List<EndListener> endListeners = new ArrayList<>();
 
     public MobService(MyBoxMobsPlugin plugin) {
         this.plugin = plugin;
         this.defKey = new NamespacedKey(plugin, "def");
         this.originKey = new NamespacedKey(plugin, "origin");
+        this.spawnedKey = new NamespacedKey(plugin, "spawned");
+        this.summonerKey = new NamespacedKey(plugin, "summoner");
     }
 
     public Tracker tracker() {
@@ -80,12 +84,12 @@ public final class MobService {
                 return null;
             }
             entity = plugin.mythic().spawn(def.mythicId, at);
-            if (entity != null) tag(entity, def.id, origin);
+            if (entity != null) tag(entity, def.id, origin, summoner);
         } else {
             EntityType type = def.entityType;
             if (!type.isSpawnable() || !type.isAlive()) return null;
             entity = at.getWorld().spawnEntity(at, type, CreatureSpawnEvent.SpawnReason.CUSTOM,
-                    e -> tag(e, def.id, origin));
+                    e -> tag(e, def.id, origin, summoner));
         }
         if (entity == null) return null;
         apply(def, entity);
@@ -189,8 +193,8 @@ public final class MobService {
         if (!plugin.mythic().exists(mythicId)) return null;
         Entity entity = plugin.mythic().spawn(mythicId, at);
         if (entity == null) return null;
-        entity.getPersistentDataContainer().set(originKey, PersistentDataType.STRING, origin);
-        entity.setPersistent(false);
+        tag(entity, null, origin, null);
+        entity.getPersistentDataContainer().set(new NamespacedKey(plugin, "mythic"), PersistentDataType.STRING, mythicId);
         observe("mythic:" + mythicId, entity);
         LiveMob live = new LiveMob(entity, null, "mythic:" + mythicId, origin, null, System.currentTimeMillis());
         tracker.add(live);
@@ -211,11 +215,17 @@ public final class MobService {
         return observed.get(id);
     }
 
-    private void tag(Entity e, String defId, String origin) {
+    /**
+     * Tags a spawned mob. The tags are saved with the entity: managed mobs survive chunk unloads and restarts
+     * like vanilla mobs and are adopted again when their chunk loads ({@link #adopt}).
+     */
+    private void tag(Entity e, @Nullable String defId, String origin, @Nullable UUID summoner) {
         PersistentDataContainer pdc = e.getPersistentDataContainer();
-        pdc.set(defKey, PersistentDataType.STRING, defId);
+        if (defId != null) pdc.set(defKey, PersistentDataType.STRING, defId);
         pdc.set(originKey, PersistentDataType.STRING, origin);
-        e.setPersistent(false);
+        pdc.set(spawnedKey, PersistentDataType.LONG, System.currentTimeMillis());
+        if (summoner != null) pdc.set(summonerKey, PersistentDataType.STRING, summoner.toString());
+        e.setPersistent(true);
         if (e instanceof LivingEntity le) le.setRemoveWhenFarAway(false);
     }
 
@@ -266,7 +276,10 @@ public final class MobService {
     private void attachModel(MobDefinition def, Entity entity) {
         if (def.modelId.isEmpty() || !plugin.models().available()) return;
         if (def.source == MobDefinition.Source.CUSTOM) {
-            plugin.models().apply(entity, def.modelId, def.modelScale, def.hideBase, true);
+            // adopted after a restart: ModelEngine may already have restored the model
+            if (!plugin.models().hasModel(entity)) {
+                plugin.models().apply(entity, def.modelId, def.modelScale, def.hideBase, true);
+            }
             return;
         }
         // MythicMobs attaches its own model in its spawn skills: look two ticks later (spec 3.2)
@@ -341,20 +354,59 @@ public final class MobService {
         return n;
     }
 
-    /** Leftovers from a crash in loaded chunks (spec 3.3). */
-    public int removeOrphans(Iterable<Entity> entities) {
+    /**
+     * Mobs of MyBoxMobs coming back with their chunk (after an unload or a restart) are tracked again with their
+     * original spawn time (lifetime keeps running). The damage table starts empty. Mobs whose definition was
+     * deleted are removed. Returns how many were adopted.
+     */
+    public int adopt(Iterable<Entity> entities) {
         int n = 0;
         for (Entity e : entities) {
-            if (isTagged(e) && tracker.get(e.getUniqueId()) == null) {
-                e.remove();
-                n++;
+            if (!isTagged(e) || tracker.get(e.getUniqueId()) != null || e.isDead()) continue;
+            PersistentDataContainer pdc = e.getPersistentDataContainer();
+            String origin = pdc.getOrDefault(originKey, PersistentDataType.STRING, "command");
+            long spawned = pdc.getOrDefault(spawnedKey, PersistentDataType.LONG, System.currentTimeMillis());
+            UUID summoner = null;
+            try {
+                String raw = pdc.get(summonerKey, PersistentDataType.STRING);
+                if (raw != null) summoner = UUID.fromString(raw);
+            } catch (IllegalArgumentException ignored) {
+                // bad tag, no summoner
             }
+            String defId = pdc.get(defKey, PersistentDataType.STRING);
+            LiveMob live;
+            if (defId == null) {
+                String mythicId = pdc.getOrDefault(new NamespacedKey(plugin, "mythic"), PersistentDataType.STRING, "?");
+                live = new LiveMob(e, null, "mythic:" + mythicId, origin, null, spawned);
+            } else {
+                MobDefinition def = plugin.registry().get(defId);
+                if (def == null) {
+                    e.remove();
+                    continue;
+                }
+                live = new LiveMob(e, def, def.id, origin, summoner, spawned);
+                long now = System.currentTimeMillis();
+                for (SkillEntry s : def.skills) if (s.trigger == SkillEntry.Trigger.TIMER) live.lastCast.put(s, now);
+                if (def.source == MobDefinition.Source.CUSTOM) attachModel(def, e);
+            }
+            tracker.add(live);
+            n++;
         }
         return n;
     }
 
-    /** Plugin disable: every tracked mob is removed (they are not persistent anyway). */
+    /** The chunk of a tracked mob unloads: it stays saved in the world and is adopted again on load. */
+    public void unloaded(Iterable<Entity> entities) {
+        for (Entity e : entities) {
+            LiveMob mob = tracker.get(e.getUniqueId());
+            if (mob == null) continue;
+            mob.ended = true;
+            tracker.remove(e.getUniqueId());
+        }
+    }
+
+    /** Plugin disable: mobs stay in the world (saved with it) and are adopted again on the next start. */
     public void shutdown() {
-        for (LiveMob mob : tracker.all()) end(mob, MbmMobDespawnEvent.Reason.REMOVED);
+        for (LiveMob mob : tracker.all()) mob.ended = true;
     }
 }
