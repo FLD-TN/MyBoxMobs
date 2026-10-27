@@ -10,3 +10,6 @@ out/
 libs/MythicMobs-*.jar
 libs/ModelEngine-*.jar
 libs/DecentHolograms-*.jar
+
+# bought mob packs are never committed (keep them in LEGACY-BOXPVP/MobPacks)
+Warlord Kragan, The Bloodfury/
