@@ -30,6 +30,10 @@ public final class MobRegistry {
             "&#FF6B6B❤ &#FFC9C9%health%  &7|  &#FFB86B⚔ &#FFE3C2%damage%",
             "&#B4F8C8Đang tồn tại: &#7CFC9A%alive%&f/&#FFD166%max% &#B4F8C8quái", "",
             "&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%", "#ICON: SPAWNER");
+    private static final List<String> DEFAULT_SPAWNER_HOLO_054 = List.of("&8[%mob%&8]", "",
+            "&#FFC9C9%health% &#FF6B6B❤  &7|  &#FFE3C2%damage% &#FFB86B⚔",
+            "&#B4F8C8Đang tồn tại: &#7CFC9A%alive%&f/&#FFD166%max% &#B4F8C8quái", "",
+            "&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%", "#ICON: SPAWNER");
 
     public MobRegistry(File dataFolder, Logger log) {
         this.folder = new File(dataFolder, "mobs");
@@ -69,9 +73,10 @@ public final class MobRegistry {
                 save(def);
             }
         }
-        // 0.5.4: value before the icon ("2.500 ❤") in mobs that saved the 0.5.3 default spawner hologram
+        // mobs that saved an older default spawner hologram (0.5.3 / 0.5.4) get the current default
         for (MobDefinition def : mobs.values()) {
-            if (def.spawnerHolo.equals(DEFAULT_SPAWNER_HOLO_053) && !defaultSpawnerHolo.isEmpty()) {
+            if ((def.spawnerHolo.equals(DEFAULT_SPAWNER_HOLO_053) || def.spawnerHolo.equals(DEFAULT_SPAWNER_HOLO_054))
+                    && !defaultSpawnerHolo.isEmpty() && !def.spawnerHolo.equals(defaultSpawnerHolo)) {
                 def.spawnerHolo.clear();
                 def.spawnerHolo.addAll(defaultSpawnerHolo);
                 save(def);

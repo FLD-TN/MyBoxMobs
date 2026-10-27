@@ -1,5 +1,10 @@
 # MyBoxMobs changelog
 
+## 0.5.5 (2026-10-27)
+
+- Spawner hologram default: no blank line between "Đang tồn tại" and "Xuất hiện sau", a blank line before the
+  spinning spawner icon. config.yml goes to config-version 6; mobs on the 0.5.3 / 0.5.4 default are migrated.
+
 ## 0.5.4 (2026-10-27)
 
 - Spawner hologram: the value comes before its icon ("2.500 ❤  |  8 ⚔"). config.yml goes to config-version 5;

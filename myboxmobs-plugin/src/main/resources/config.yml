@@ -1,7 +1,7 @@
 # MyBoxMobs — configuration
 
 # Do not change. A file with a lower version is moved to old-configs/ and replaced by the new defaults
-config-version: 5
+config-version: 6
 #
 # Colours in every text: &a legacy, &#RRGGBB hex, MiniMessage tags (<gradient:#..:#..>, <rainbow>, <#hex>)
 # and PlaceholderAPI placeholders, all in the same line.
@@ -62,8 +62,8 @@ hologram:
     - ''
     - '&#FFC9C9%health% &#FF6B6B❤  &7|  &#FFE3C2%damage% &#FFB86B⚔'
     - '&#B4F8C8Đang tồn tại: &#7CFC9A%alive%&f/&#FFD166%max% &#B4F8C8quái'
-    - ''
     - '&#9AD0F5Xuất hiện sau: &#E3F1FF%countdown%'
+    - ''
     - '#ICON: SPAWNER'
   # Default lines of a new altar. %mob% %item% %amount%
   altar-lines:
