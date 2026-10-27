@@ -57,13 +57,17 @@ public final class MobListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onDeath(EntityDeathEvent e) {
         LiveMob mob = mobs.tracker().get(e.getEntity().getUniqueId());
-        if (mob == null) return;
-        if (mob.def != null) {
-            // spec 5: MyBoxMobs rewards fully replace the mob's own drops
-            e.getDrops().clear();
-            e.setDroppedExp(mob.def.xp);
-        }
-        mobs.handleDeath(mob);
+        if (mob == null || mob.def == null) return;
+        // spec 5: MyBoxMobs rewards fully replace the mob's own drops
+        e.getDrops().clear();
+        e.setDroppedExp(mob.def.xp);
+    }
+
+    /** Rewards and announcements only when no plugin cancelled the death. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDeathDone(EntityDeathEvent e) {
+        LiveMob mob = mobs.tracker().get(e.getEntity().getUniqueId());
+        if (mob != null) mobs.handleDeath(mob);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

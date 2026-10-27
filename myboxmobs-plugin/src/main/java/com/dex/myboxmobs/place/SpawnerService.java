@@ -34,6 +34,9 @@ public final class SpawnerService {
     private final File file;
     private final Map<String, SpawnerDef> spawners = new TreeMap<>();
     private final Set<Chunk> tickets = new HashSet<>();
+    /** Next-wave times changed since the last save; written at most every 30 s and on disable. */
+    private boolean dirty;
+    private long lastSave;
 
     public SpawnerService(MyBoxMobsPlugin plugin) {
         this.plugin = plugin;
@@ -59,6 +62,8 @@ public final class SpawnerService {
     }
 
     public void save() {
+        dirty = false;
+        lastSave = System.currentTimeMillis();
         YamlConfiguration y = new YamlConfiguration();
         y.set("config-version", 1);
         for (SpawnerDef d : spawners.values()) d.save(y.createSection("spawners." + d.id));
@@ -67,6 +72,11 @@ public final class SpawnerService {
         } catch (IOException ex) {
             plugin.getLogger().severe("Could not save spawners.yml: " + ex.getMessage());
         }
+    }
+
+    /** Plugin disable: the countdowns are kept for the next start. */
+    public void saveIfDirty() {
+        if (dirty) save();
     }
 
     public Collection<SpawnerDef> all() {
@@ -102,12 +112,13 @@ public final class SpawnerService {
         long now = System.currentTimeMillis();
         boolean planned = false;
         Set<Chunk> wanted = new HashSet<>();
+        Map<String, List<LiveMob>> byOrigin = plugin.mobs().tracker().byOrigin();
         for (SpawnerDef d : spawners.values()) {
             Location loc = d.location();
             if (loc == null) continue;
             if (d.enabled && d.keepChunkLoaded && d.mode == SpawnerDef.Mode.ALWAYS) wanted.add(loc.getChunk());
             boolean loaded = loc.isChunkLoaded();
-            List<LiveMob> alive = plugin.mobs().tracker().byOrigin("spawner:" + d.id);
+            List<LiveMob> alive = byOrigin.getOrDefault("spawner:" + d.id, List.of());
             d.active = d.enabled && loaded && !d.mobs.isEmpty()
                     && (d.mode == SpawnerDef.Mode.ALWAYS || playerNear(loc, d.activationRadius));
             // the countdown always runs (also without players); a due wave waits until the spawner is active
@@ -125,7 +136,8 @@ public final class SpawnerService {
             if (loaded) hologram(d, loc, alive.size(), now);
         }
         syncTickets(wanted);
-        if (planned) save();
+        if (planned) dirty = true;
+        if (dirty && now - lastSave >= 30_000) save();
     }
 
     /** Next wave time: the next clock time of the schedule, else now + interval. */

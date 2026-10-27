@@ -13,7 +13,7 @@ public final class LiveMob {
 
     public final Entity entity;
     /** {@code null} for a raw MythicMobs mob of a spawner (no overrides, rewards or announcements). */
-    public final @Nullable MobDefinition def;
+    public @Nullable MobDefinition def;
     /** Display id: the definition id, or {@code mythic:<id>} for a raw spawner mob. */
     public final String id;
     /** {@code command}, {@code spawner:<id>} or {@code altar:<id>}. */

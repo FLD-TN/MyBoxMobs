@@ -225,12 +225,19 @@ public final class AltarService implements MobService.EndListener {
      * (its last chunk is loaded but the boss is not there for 5 seconds). An unloaded boss keeps the altar busy.
      */
     private void watchBosses() {
+        boolean moved = false;
         for (AltarDef d : altars.values()) {
             if (d.boss == null) continue;
             LiveMob mob = plugin.mobs().tracker().get(d.boss);
             if (mob != null && mob.entity.isValid()) {
                 Location at = mob.entity.getLocation();
-                d.bossWorld = at.getWorld().getName();
+                String world = at.getWorld().getName();
+                // saved when the boss enters another chunk, so a restart looks for it in the right place
+                if (!world.equals(d.bossWorld) || (at.getBlockX() >> 4) != (d.bossX >> 4)
+                        || (at.getBlockZ() >> 4) != (d.bossZ >> 4)) {
+                    moved = true;
+                }
+                d.bossWorld = world;
                 d.bossX = at.getBlockX();
                 d.bossZ = at.getBlockZ();
                 d.bossMissing = 0;
@@ -243,6 +250,7 @@ public final class AltarService implements MobService.EndListener {
                 free(d);
             }
         }
+        if (moved) save();
     }
 
     /** Every second: holograms (hidden while the boss lives, countdown during the cooldown). */

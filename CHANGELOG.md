@@ -1,5 +1,20 @@
 # MyBoxMobs changelog
 
+## 0.7.5 (2026-10-27)
+
+Review pass (bugs, leaks, CPU).
+
+- Spawner mobs no longer pile up: a spawner mob coming back with its chunk is removed when its spawner was deleted
+  or has already refilled up to max-alive while the mob was unloaded (before: the count could grow without end).
+- Altar bosses: the boss position is saved whenever it enters another chunk, so after a restart the altar looks for
+  the boss where it really is (before: the altar could free itself and allow a second boss).
+- /mbm reload: living mobs switch to the reloaded definitions (rewards, skills, bars edited after a reload apply).
+- Rewards, kill count and death announcement wait for EntityDeathEvent at MONITOR: a death cancelled by another
+  plugin pays nothing.
+- CPU: name / boss bar code skips mobs with both bars off; spawners group the living mobs once per second instead of
+  scanning every mob per spawner; %myboxmobs_alive_<id>% reads a kept count; spawners.yml (countdowns) is written at
+  most every 30 s and on shutdown instead of after every wave.
+
 ## 0.7.4 (2026-10-27)
 
 - The example mob (example_zombie) shipped a death message without `%top%`, so it never showed the damage board even

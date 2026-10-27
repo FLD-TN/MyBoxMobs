@@ -133,7 +133,10 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         GuiListener.closeAll();
         if (mobs != null) mobs.shutdown();
         if (nameTags != null) nameTags.clear();
-        if (spawners != null) spawners.clearRuntime();
+        if (spawners != null) {
+            spawners.saveIfDirty();
+            spawners.clearRuntime();
+        }
         if (altars != null) altars.clearHolograms();
         if (kills != null) kills.close();
         Bukkit.getServicesManager().unregisterAll(this);
@@ -151,6 +154,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         GuiListener.closeAll();
         loadConfigFiles();
         registry.load(getConfig());
+        mobs.rebind();
         spawners.load();
         Map<String, UUID[]> bosses = new HashMap<>();
         for (AltarDef d : altars.all()) bosses.put(d.id, new UUID[]{d.boss, d.summoner});

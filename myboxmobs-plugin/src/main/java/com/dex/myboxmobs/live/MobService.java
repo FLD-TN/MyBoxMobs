@@ -401,6 +401,11 @@ public final class MobService {
             } catch (IllegalArgumentException ignored) {
                 // bad tag, no summoner
             }
+            if (origin.startsWith("spawner:") && !spawnerHasRoom(origin.substring(8))) {
+                // the spawner was deleted, or already refilled while this mob was unloaded: no pile-up
+                e.remove();
+                continue;
+            }
             String defId = pdc.get(defKey, PersistentDataType.STRING);
             LiveMob live;
             if (defId == null) {
@@ -424,6 +429,27 @@ public final class MobService {
             n++;
         }
         return n;
+    }
+
+    private boolean spawnerHasRoom(String spawnerId) {
+        com.dex.myboxmobs.place.SpawnerDef d = plugin.spawners() == null ? null : plugin.spawners().get(spawnerId);
+        return d != null && tracker.byOrigin("spawner:" + spawnerId).size() < d.maxAlive;
+    }
+
+    /**
+     * After /mbm reload: living mobs use the new definitions (rewards, skills, bars edited later apply to them).
+     * Mobs whose definition was deleted keep the old one until they die.
+     */
+    public void rebind() {
+        long now = System.currentTimeMillis();
+        for (LiveMob mob : tracker.all()) {
+            if (mob.def == null) continue;
+            MobDefinition def = plugin.registry().get(mob.def.id);
+            if (def == null || def == mob.def) continue;
+            mob.def = def;
+            mob.lastCast.clear();
+            for (SkillEntry s : def.skills) if (s.trigger == SkillEntry.Trigger.TIMER) mob.lastCast.put(s, now);
+        }
     }
 
     /**

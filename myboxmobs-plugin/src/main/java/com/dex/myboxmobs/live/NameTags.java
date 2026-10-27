@@ -92,6 +92,7 @@ public final class NameTags implements Listener, MobService.EndListener {
             remove(id);
             return;
         }
+        if (!def.nameBar && !def.bossBar && !shown.containsKey(id) && !bossBars.containsKey(id)) return;
         String name = plugin.mobs().nameOf(def);
         bossBar(mob, le, name, refresh, full);
         if (name == null || !def.nameBar) {
