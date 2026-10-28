@@ -63,6 +63,8 @@ public final class AltarService implements MobService.EndListener {
             }
         }
         if (migrated) save();
+        // a boss that left while the server was off (or a crash): the altar block comes back
+        for (AltarDef d : altars.values()) if (d.boss == null && d.hiddenBlock != null) showBlock(d);
     }
 
     public void save() {
@@ -97,6 +99,7 @@ public final class AltarService implements MobService.EndListener {
     }
 
     public void delete(AltarDef d) {
+        showBlock(d);
         altars.remove(d.id);
         plugin.holograms().remove(HOLO + d.id);
         save();
@@ -106,11 +109,11 @@ public final class AltarService implements MobService.EndListener {
     public void use(Player p, AltarDef d) {
         Messages m = plugin.messages();
         if (!p.hasPermission("myboxmobs.altar.use")) {
-            m.send(p, "altar.no-permission");
+            m.send(p, "shrine.no-permission");
             return;
         }
         if (d.mob == null || d.requirement == null) {
-            m.send(p, "altar.not-ready");
+            m.send(p, "shrine.not-ready");
             return;
         }
         UUID ownerClan = null;
@@ -118,29 +121,29 @@ public final class AltarService implements MobService.EndListener {
             ClanSupport clans = plugin.clans();
             ClanSupport.ClanInfo own = clans.clanOf(p.getUniqueId());
             if (!clans.available()) {
-                m.send(p, "altar.clan-unavailable");
+                m.send(p, "shrine.unavailable");
                 return;
             }
             if (own == null || !clans.isLeader(p.getUniqueId())) {
-                m.send(p, "altar.clan-leader-only");
+                m.send(p, "shrine.leader-only");
                 return;
             }
             ownerClan = own.uuid();
         }
         if (d.boss != null) {
-            m.send(p, "altar.busy", "mob", plugin.spawners().mobName(d.mob));
+            m.send(p, "shrine.busy", "mob", plugin.spawners().mobName(d.mob));
             return;
         }
         long now = System.currentTimeMillis();
         if (d.cooldownUntil > now) {
-            m.send(p, "altar.cooldown", "time", Format.duration((d.cooldownUntil - now + 999) / 1000));
+            m.send(p, "shrine.cooldown", "time", Format.duration((d.cooldownUntil - now + 999) / 1000));
             return;
         }
         PlayerInventory inv = p.getInventory();
         ItemStack hand = inv.getItemInMainHand();
         int need = Math.max(1, d.requirement.getAmount());
         if (!hand.isSimilar(d.requirement) || hand.getAmount() < need) {
-            m.send(p, "altar.wrong-item", "item", ItemNames.of(d.requirement), "amount", String.valueOf(need));
+            m.send(p, "shrine.wrong-item", "item", ItemNames.of(d.requirement), "amount", String.valueOf(need));
             return;
         }
         Location loc = d.blockLocation();
@@ -148,7 +151,7 @@ public final class AltarService implements MobService.EndListener {
         Location spawnAt = loc.clone().add(0.5, 1, 0.5);
         LiveMob boss = spawn(d, spawnAt, p, ownerClan);
         if (boss == null) {
-            m.send(p, "altar.failed");
+            m.send(p, "shrine.failed");
             return;
         }
         hand.setAmount(hand.getAmount() - need);
@@ -158,15 +161,16 @@ public final class AltarService implements MobService.EndListener {
         d.bossWorld = spawnAt.getWorld().getName();
         d.bossX = spawnAt.getBlockX();
         d.bossZ = spawnAt.getBlockZ();
+        hideBlock(d, loc.getBlock());
         save();
         plugin.holograms().remove(HOLO + d.id);
         String mob = plugin.spawners().mobName(d.mob);
         if (ownerClan == null) {
-            m.send(p, "altar.summoned", "mob", mob);
+            m.send(p, "shrine.summoned", "mob", mob);
             return;
         }
         for (Player member : plugin.clans().onlineMembers(ownerClan)) {
-            m.send(member, "altar.clan-summoned", "player", p.getName(), "mob", mob, "world", spawnAt.getWorld().getName(),
+            m.send(member, "shrine.clan-summoned", "player", p.getName(), "mob", mob, "world", spawnAt.getWorld().getName(),
                     "x", String.valueOf(spawnAt.getBlockX()), "y", String.valueOf(spawnAt.getBlockY()),
                     "z", String.valueOf(spawnAt.getBlockZ()));
         }
@@ -211,7 +215,28 @@ public final class AltarService implements MobService.EndListener {
         free(d);
     }
 
+    /** The altar block goes away while its boss lives, so it never gets in the boss's way. */
+    private void hideBlock(AltarDef d, org.bukkit.block.Block block) {
+        if (d.hiddenBlock != null || block.getType().isAir()) return;
+        d.hiddenBlock = block.getBlockData().getAsString();
+        block.setType(org.bukkit.Material.AIR, false);
+    }
+
+    /** Puts the altar block back exactly as it was (also over water or a block that got there). */
+    private void showBlock(AltarDef d) {
+        if (d.hiddenBlock == null) return;
+        Location loc = d.blockLocation();
+        if (loc == null) return;
+        try {
+            loc.getBlock().setBlockData(Bukkit.createBlockData(d.hiddenBlock), false);
+        } catch (IllegalArgumentException ex) {
+            plugin.getLogger().warning("Altar " + d.id + ": could not put its block back (" + d.hiddenBlock + ")");
+        }
+        d.hiddenBlock = null;
+    }
+
     private void free(AltarDef d) {
+        showBlock(d);
         d.boss = null;
         d.summoner = null;
         d.bossWorld = null;

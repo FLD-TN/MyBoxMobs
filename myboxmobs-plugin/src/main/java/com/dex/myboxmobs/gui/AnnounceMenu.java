@@ -22,7 +22,7 @@ public final class AnnounceMenu extends Menu {
     @Override
     protected void draw() {
         entry(11, Material.LIME_BANNER, "Khi xuất hiện", def.spawn,
-                List.of("%mob% tên mob", "%world% %x% %y% %z% vị trí", "%summoner% người triệu hồi (bàn triệu hồi)"));
+                List.of("%mob% tên mob", "%world% %x% %y% %z% vị trí", "%summoner% người triệu hồi (tế đàn)"));
         entry(13, Material.RED_BANNER, "Khi bị hạ gục", def.death,
                 List.of("%mob% tên mob", "%killer% người hạ gục", "%killer_damage% sát thương của họ",
                         "%top% (một dòng riêng) bảng top, mọi chế độ trừ người hạ gục",

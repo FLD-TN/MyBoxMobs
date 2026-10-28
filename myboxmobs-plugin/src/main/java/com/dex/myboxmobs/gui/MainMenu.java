@@ -22,16 +22,16 @@ public final class MainMenu extends Menu {
                 .desc("Điểm spawn mob theo đợt, có holo đếm ngược.")
                 .section("Thông tin:").row("Số spawner", String.valueOf(plugin.spawners().all().size()))
                 .action("Chuột trái để mở").build()), click -> Gui.spawners(plugin, player));
-        set(14, icon(Material.SCULK_SHRIEKER, Palette.ALTAR + "Bàn triệu hồi", Lore.of()
+        set(14, icon(Material.SCULK_SHRIEKER, Palette.ALTAR + "Tế đàn", Lore.of()
                 .desc("Người chơi cầm vật phẩm yêu cầu, chuột phải vào block để triệu hồi boss.")
-                .section("Thông tin:").row("Số bàn", String.valueOf(plugin.altars().all().size()))
+                .section("Thông tin:").row("Số tế đàn", String.valueOf(plugin.altars().all().size()))
                 .action("Chuột trái để mở").build()), click -> Gui.altars(plugin, player));
         set(16, icon(Material.CLOCK, Palette.ALIVE + "Mob đang sống", Lore.of()
                 .desc("Các mob do MyBoxMobs tạo ra còn sống.")
                 .section("Thông tin:").row("Đang sống", String.valueOf(plugin.mobs().tracker().size()))
                 .action("Chuột trái để mở").build()), click -> Gui.alive(plugin, player));
         set(22, icon(Material.REPEATER, "&#BFC7D5Tải lại", Lore.of()
-                .desc("Đọc lại config, messages, mob, spawner và bàn triệu hồi từ file.")
+                .desc("Đọc lại config, messages, mob, spawner và tế đàn từ file.")
                 .action("Chuột trái để tải lại").build()), click -> {
             player.closeInventory();
             plugin.reloadAll();

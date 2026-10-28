@@ -40,7 +40,18 @@ public final class AltarListener implements Listener {
     public void onBreak(BlockBreakEvent e) {
         if (altars.at(e.getBlock()) == null) return;
         e.setCancelled(true);
-        messages.send(e.getPlayer(), "altar.protected");
+        messages.send(e.getPlayer(), "shrine.protected");
+    }
+
+    /** While the altar block is hidden (boss alive) nothing may be placed or flow into its place. */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlace(org.bukkit.event.block.BlockPlaceEvent e) {
+        if (altars.at(e.getBlockPlaced()) != null) e.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onFlow(org.bukkit.event.block.BlockFromToEvent e) {
+        if (altars.at(e.getToBlock()) != null) e.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

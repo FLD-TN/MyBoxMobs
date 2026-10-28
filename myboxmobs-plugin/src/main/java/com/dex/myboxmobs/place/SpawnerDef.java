@@ -54,6 +54,10 @@ public final class SpawnerDef {
     /** Epoch millis of the pending respawns (one per empty place), saved. */
     public final List<Long> respawnAt = new ArrayList<>();
 
+    /** Spawn area (same world as the spawner): two corners on the ground, null = spawn around the spawner. */
+    public @Nullable int[] pos1;
+    public @Nullable int[] pos2;
+
     // runtime, not saved
     public boolean active;
 
@@ -76,6 +80,53 @@ public final class SpawnerDef {
     public @Nullable Location location() {
         World w = Bukkit.getWorld(world);
         return w == null ? null : new Location(w, x, y, z);
+    }
+
+    public boolean hasRegion() {
+        return pos1 != null && pos2 != null;
+    }
+
+    public int minX() {
+        return Math.min(pos1[0], pos2[0]);
+    }
+
+    public int maxX() {
+        return Math.max(pos1[0], pos2[0]);
+    }
+
+    public int minY() {
+        return Math.min(pos1[1], pos2[1]);
+    }
+
+    public int maxY() {
+        return Math.max(pos1[1], pos2[1]);
+    }
+
+    public int minZ() {
+        return Math.min(pos1[2], pos2[2]);
+    }
+
+    public int maxZ() {
+        return Math.max(pos1[2], pos2[2]);
+    }
+
+    /**
+     * Where the spawner "is": the centre of its area (on top of the higher corner) when it has one, else its own
+     * location. Activation radius, hologram and kept chunk use it.
+     */
+    public @Nullable Location center() {
+        if (!hasRegion()) return location();
+        World w = Bukkit.getWorld(world);
+        if (w == null) return null;
+        return new Location(w, (minX() + maxX() + 1) / 2.0, maxY() + 1, (minZ() + maxZ() + 1) / 2.0);
+    }
+
+    /** True when the block position is inside the area grown by {@code margin} blocks on every side. */
+    public boolean inRegion(Location at, double margin) {
+        if (!hasRegion() || !at.getWorld().getName().equals(world)) return false;
+        return at.getX() >= minX() - margin && at.getX() <= maxX() + 1 + margin
+                && at.getZ() >= minZ() - margin && at.getZ() <= maxZ() + 1 + margin
+                && at.getY() >= minY() - 4 - margin && at.getY() <= maxY() + 6 + margin;
     }
 
     public void save(ConfigurationSection s) {
@@ -105,6 +156,12 @@ public final class SpawnerDef {
         s.set("next-wave-at", nextWaveAt);
         s.set("after-death", afterDeath);
         s.set("respawn-at", respawnAt);
+        s.set("region.pos1", pos1 == null ? null : List.of(pos1[0], pos1[1], pos1[2]));
+        s.set("region.pos2", pos2 == null ? null : List.of(pos2[0], pos2[1], pos2[2]));
+    }
+
+    private static @Nullable int[] pos(List<Integer> raw) {
+        return raw == null || raw.size() < 3 ? null : new int[]{raw.get(0), raw.get(1), raw.get(2)};
     }
 
     /**
@@ -168,6 +225,8 @@ public final class SpawnerDef {
         d.nextWaveAt = s.getLong("next-wave-at", 0);
         d.afterDeath = s.getBoolean("after-death", false);
         d.respawnAt.addAll(s.getLongList("respawn-at"));
+        d.pos1 = pos(s.getIntegerList("region.pos1"));
+        d.pos2 = pos(s.getIntegerList("region.pos2"));
         return d;
     }
 }

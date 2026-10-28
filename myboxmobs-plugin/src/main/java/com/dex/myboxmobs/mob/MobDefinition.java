@@ -82,6 +82,9 @@ public final class MobDefinition {
     public boolean nameBar;
     /** Health shown in a boss bar to nearby players (bosses without a model, or whose model has no boss bar). */
     public boolean bossBar;
+    /** Every player hit takes exactly 1 health (max health = hits needed); other damage does nothing. */
+    public boolean hitHealth;
+    public ThiefSettings thief = new ThiefSettings();
     /** Extra height (blocks) of the name above a ModelEngine model. */
     public double nametagOffset = 0.3;
     public int lifetimeSeconds;
@@ -132,6 +135,8 @@ public final class MobDefinition {
         y.set("nametag.name-bar", nameBar);
         y.set("nametag.boss-bar", bossBar);
         y.set("nametag.height-offset", nametagOffset);
+        y.set("hit-health", hitHealth);
+        thief.save(y, "thief");
         y.set("lifetime-seconds", lifetimeSeconds);
         y.set("rewards.mode", rewardMode.name());
         y.set("rewards.multiplier-enabled", multiplierEnabled);
@@ -231,6 +236,8 @@ public final class MobDefinition {
         d.nameBar = y.getBoolean("nametag.name-bar", false);
         d.bossBar = y.getBoolean("nametag.boss-bar", false);
         d.nametagOffset = Math.max(-5, Math.min(10, y.getDouble("nametag.height-offset", 0.3)));
+        d.hitHealth = y.getBoolean("hit-health", false);
+        d.thief = ThiefSettings.load(y.getConfigurationSection("thief"));
         d.lifetimeSeconds = Math.max(0, y.getInt("lifetime-seconds", 0));
         try {
             d.rewardMode = RewardMode.valueOf(y.getString("rewards.mode", "KILLER").toUpperCase());

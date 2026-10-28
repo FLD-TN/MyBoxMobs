@@ -15,5 +15,5 @@ permissions:
     description: Mọi lệnh và GUI quản trị của MyBoxMobs
     default: op
   myboxmobs.altar.use:
-    description: Dùng bàn triệu hồi
+    description: Dùng tế đàn để triệu hồi
     default: true

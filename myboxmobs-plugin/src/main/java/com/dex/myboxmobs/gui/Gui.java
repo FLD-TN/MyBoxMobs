@@ -252,7 +252,7 @@ public final class Gui {
     // ------------------------------------------------------------------ altars
 
     public static void altars(MyBoxMobsPlugin plugin, Player p) {
-        new PickMenu<AltarDef>(plugin, p, "&8Bàn triệu hồi", () -> new ArrayList<>(plugin.altars().all()),
+        new PickMenu<AltarDef>(plugin, p, "&8Tế đàn", () -> new ArrayList<>(plugin.altars().all()),
                 d -> Menu.icon(Material.SCULK_SHRIEKER, Palette.ALTAR + d.id, Lore.of().section("Thông tin:")
                         .row("Vị trí", d.world + " " + d.x + " " + d.y + " " + d.z)
                         .row("Mob", d.mob == null ? "chưa chọn" : plugin.spawners().mobName(d.mob))
@@ -262,7 +262,7 @@ public final class Gui {
                 d -> d.id,
                 (d, click) -> {
                     if (click == ClickType.SHIFT_RIGHT) {
-                        new ConfirmMenu(plugin, p, "bàn " + d.id, () -> {
+                        new ConfirmMenu(plugin, p, "tế đàn " + d.id, () -> {
                             plugin.altars().delete(d);
                             plugin.messages().send(p, "altar.deleted", "id", d.id);
                             altars(plugin, p);
@@ -279,7 +279,7 @@ public final class Gui {
                 }, () -> new MainMenu(plugin, p).open()) {
             @Override
             protected void extraButtons() {
-                set(47, icon(Material.BOOK, Palette.ALTAR + "Tạo bàn triệu hồi", Lore.of()
+                set(47, icon(Material.BOOK, Palette.ALTAR + "Tạo tế đàn", Lore.of()
                         .desc("Đặt block, nhìn vào nó rồi dùng lệnh:")
                         .line("&f/mbm altar create <mã> <mob>")
                         .build()), null);

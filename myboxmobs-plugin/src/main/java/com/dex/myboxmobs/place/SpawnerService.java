@@ -114,7 +114,7 @@ public final class SpawnerService {
         Set<Chunk> wanted = new HashSet<>();
         Map<String, List<LiveMob>> byOrigin = plugin.mobs().tracker().byOrigin();
         for (SpawnerDef d : spawners.values()) {
-            Location loc = d.location();
+            Location loc = d.center();
             if (loc == null) continue;
             if (d.enabled && d.keepChunkLoaded && d.mode == SpawnerDef.Mode.ALWAYS) wanted.add(loc.getChunk());
             boolean loaded = loc.isChunkLoaded() && loc.getChunk().isEntitiesLoaded();
@@ -130,7 +130,7 @@ public final class SpawnerService {
                     planned = true;
                     alive = plugin.mobs().tracker().byOrigin("spawner:" + d.id);
                 }
-                if (d.leash > 0) leash(alive, loc, d.leash);
+                if (d.leash > 0) leash(d, alive, loc);
                 if (loaded) hologram(d, loc, alive.size(), now);
                 continue;
             }
@@ -145,7 +145,7 @@ public final class SpawnerService {
                 planned = true;
                 alive = plugin.mobs().tracker().byOrigin("spawner:" + d.id);
             }
-            if (d.leash > 0) leash(alive, loc, d.leash);
+            if (d.leash > 0) leash(d, alive, loc);
             if (loaded) hologram(d, loc, alive.size(), now);
         }
         syncTickets(wanted);
@@ -187,7 +187,7 @@ public final class SpawnerService {
         for (int i = 0; i < n; i++) {
             SpawnerDef.Entry entry = pick(d.mobs);
             if (entry == null) return;
-            Location at = spread(center, d.spread);
+            Location at = d.hasRegion() ? regionPoint(d, center) : spread(center, d.spread);
             String origin = "spawner:" + d.id;
             if (entry.mob.mythic()) {
                 plugin.mobs().spawnRawMythic(entry.mob.id(), at, origin, null);
@@ -228,6 +228,24 @@ public final class SpawnerService {
         return center.clone();
     }
 
+    /**
+     * A random standing place inside the spawner's area, one block above the ground (the corners are picked on the
+     * ground, so a mob never spawns inside it). The centre when no place was found in 10 tries.
+     */
+    public static Location regionPoint(SpawnerDef d, Location fallback) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int attempt = 0; attempt < 10; attempt++) {
+            int x = r.nextInt(d.minX(), d.maxX() + 1);
+            int z = r.nextInt(d.minZ(), d.maxZ() + 1);
+            Location at = Ground.find(fallback.getWorld(), x, z, d.maxY() + 3, d.minY() - 3, 1.0);
+            if (at != null) {
+                at.setYaw(r.nextFloat() * 360f);
+                return at;
+            }
+        }
+        return fallback.clone();
+    }
+
     private static boolean playerNear(Location loc, int radius) {
         double max = (double) radius * radius;
         for (Player p : loc.getWorld().getPlayers()) {
@@ -236,12 +254,17 @@ public final class SpawnerService {
         return false;
     }
 
-    private static void leash(List<LiveMob> alive, Location home, double leash) {
-        double max = leash * leash;
+    /** Mobs too far away go back: into the area (random place) when the spawner has one, else to its centre. */
+    private static void leash(SpawnerDef d, List<LiveMob> alive, Location home) {
+        double max = d.leash * d.leash;
         for (LiveMob mob : alive) {
             if (!mob.entity.isValid()) continue;
             Location at = mob.entity.getLocation();
-            if (!at.getWorld().equals(home.getWorld()) || at.distanceSquared(home) > max) mob.entity.teleport(home);
+            if (d.hasRegion()) {
+                if (!d.inRegion(at, d.leash)) mob.entity.teleport(regionPoint(d, home));
+            } else if (!at.getWorld().equals(home.getWorld()) || at.distanceSquared(home) > max) {
+                mob.entity.teleport(home);
+            }
         }
     }
 

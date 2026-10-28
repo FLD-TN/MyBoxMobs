@@ -24,6 +24,7 @@ import com.dex.myboxmobs.live.KillStats;
 import com.dex.myboxmobs.live.MobListener;
 import com.dex.myboxmobs.live.MobService;
 import com.dex.myboxmobs.live.NameTags;
+import com.dex.myboxmobs.live.ThiefService;
 import com.dex.myboxmobs.live.RewardService;
 import com.dex.myboxmobs.mob.MobRegistry;
 import com.dex.myboxmobs.place.AltarDef;
@@ -61,6 +62,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
     private SpawnerService spawners;
     private AltarService altars;
     private NameTags nameTags;
+    private ThiefService thieves;
     private ChatInput input;
 
     @Override
@@ -90,6 +92,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         kills.open();
         mobs = new MobService(this);
         nameTags = new NameTags(this);
+        thieves = new ThiefService(this);
         mobs.addEndListener(nameTags);
         announcer = new Announcer(() -> settings, mobs::displayName, () -> clans);
         rewards = new RewardService(() -> settings, messages, economy, mobs::displayName, () -> clans, getLogger());
@@ -104,6 +107,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         pm.registerEvents(new AltarListener(altars, messages), this);
         pm.registerEvents(new ClanBossListener(this), this);
         pm.registerEvents(nameTags, this);
+        pm.registerEvents(thieves, this);
         pm.registerEvents(new GuiListener(this), this);
         pm.registerEvents(input, this);
         PluginCommand command = getCommand("myboxmobs");
@@ -119,6 +123,7 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
         if (adopted > 0) getLogger().info("Took back " + adopted + " MyBoxMobs mobs still in the world");
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             mobs.tick();
+            thieves.tick();
             spawners.tick();
             altars.tick();
         }, 20L, 20L);
@@ -231,6 +236,10 @@ public final class MyBoxMobsPlugin extends JavaPlugin {
 
     public NameTags nameTags() {
         return nameTags;
+    }
+
+    public ThiefService thieves() {
+        return thieves;
     }
 
     public ChatInput input() {

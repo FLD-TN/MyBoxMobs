@@ -54,6 +54,30 @@ public final class EconomyHooks implements Economy {
     }
 
     @Override
+    public long moneyBalance(Player player) {
+        VaultPart v = vault();
+        return v == null ? 0 : v.balance(player);
+    }
+
+    @Override
+    public boolean withdrawMoney(Player player, long amount) {
+        VaultPart v = vault();
+        return v != null && v.withdraw(player, amount);
+    }
+
+    @Override
+    public long gemBalance(Player player) {
+        BoxCorePart b = boxCore();
+        return b == null ? 0 : b.gemBalance(player.getUniqueId());
+    }
+
+    @Override
+    public boolean withdrawGems(Player player, long amount, String reason) {
+        BoxCorePart b = boxCore();
+        return b != null && b.withdrawGems(player.getUniqueId(), amount, reason);
+    }
+
+    @Override
     public int boostTenths(UUID player, String type) {
         BoxCorePart b = boxCore();
         return b == null ? 10 : b.tenths(player, type);
@@ -80,6 +104,14 @@ public final class EconomyHooks implements Economy {
         boolean deposit(Player player, long amount) {
             return amount <= 0 || economy.depositPlayer(player, amount).transactionSuccess();
         }
+
+        long balance(Player player) {
+            return (long) Math.floor(Math.max(0, economy.getBalance(player)));
+        }
+
+        boolean withdraw(Player player, long amount) {
+            return amount <= 0 || economy.withdrawPlayer(player, amount).transactionSuccess();
+        }
     }
 
     private static final class BoxCorePart {
@@ -100,6 +132,15 @@ public final class EconomyHooks implements Economy {
         boolean depositGems(UUID player, long amount, String reason) {
             if (amount <= 0) return true;
             return gems != null && gems.deposit(player, amount, reason) == com.dex.boxcore.api.GemResult.SUCCESS;
+        }
+
+        long gemBalance(UUID player) {
+            return gems == null ? 0 : Math.max(0, gems.balance(player));
+        }
+
+        boolean withdrawGems(UUID player, long amount, String reason) {
+            if (amount <= 0) return true;
+            return gems != null && gems.withdraw(player, amount, reason) == com.dex.boxcore.api.GemResult.SUCCESS;
         }
 
         int tenths(UUID player, String type) {

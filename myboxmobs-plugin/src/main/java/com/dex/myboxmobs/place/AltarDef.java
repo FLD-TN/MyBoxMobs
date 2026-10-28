@@ -40,6 +40,8 @@ public final class AltarDef {
     public @Nullable String bossWorld;
     public int bossX;
     public int bossZ;
+    /** Block data of the altar block while it is hidden (boss alive), null when shown. Saved. */
+    public @Nullable String hiddenBlock;
     /** Runtime: seconds the boss was missing while its last chunk was loaded. */
     public int bossMissing;
 
@@ -82,6 +84,7 @@ public final class AltarDef {
         s.set("boss-world", boss == null ? null : bossWorld);
         s.set("boss-x", boss == null ? null : bossX);
         s.set("boss-z", boss == null ? null : bossZ);
+        s.set("hidden-block", hiddenBlock);
     }
 
     private static @Nullable UUID uuid(@Nullable String raw) {
@@ -109,6 +112,7 @@ public final class AltarDef {
         d.bossWorld = s.getString("boss-world");
         d.bossX = s.getInt("boss-x");
         d.bossZ = s.getInt("boss-z");
+        d.hiddenBlock = s.getString("hidden-block");
         return d;
     }
 }

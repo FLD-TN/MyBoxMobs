@@ -15,6 +15,16 @@ public interface Economy {
 
     boolean depositGems(Player player, long amount, String reason);
 
+    /** Vault balance rounded down, 0 without Vault. */
+    long moneyBalance(Player player);
+
+    /** False when the withdrawal failed (not enough, no Vault). */
+    boolean withdrawMoney(Player player, long amount);
+
+    long gemBalance(Player player);
+
+    boolean withdrawGems(Player player, long amount, String reason);
+
     /** BoxCore boost multiplier of {@code type} in tenths (10 = x1). 10 when BoxCore is missing. */
     int boostTenths(UUID player, String type);
 

@@ -29,7 +29,7 @@ public final class MobEditorMenu extends Menu {
     protected void draw() {
         boolean mythic = def.source == MobDefinition.Source.MYTHIC;
         // row 1: general
-        set(10, icon(Material.NAME_TAG, Palette.GENERAL + "Tên hiển thị", Lore.of()
+        set(1, icon(Material.NAME_TAG, Palette.GENERAL + "Tên hiển thị", Lore.of()
                 .desc("Tên trên đầu mob và trong thông báo. Hỗ trợ &&a, &&#hex, \\<gradient>.")
                 .section("Thông tin:").row("Hiện tại", def.displayName.isEmpty() ? (mythic ? "giữ tên MythicMobs" : "không có") : def.displayName)
                 .action("Chuột trái để đổi tên").danger("Chuột phải để bỏ tên riêng").build()), click -> {
@@ -44,7 +44,7 @@ public final class MobEditorMenu extends Menu {
                 save();
             });
         });
-        set(11, icon(mythic ? Material.NETHER_STAR : Palette.egg(def.entityType), Palette.GENERAL + "Nguồn", Lore.of()
+        set(2, icon(mythic ? Material.NETHER_STAR : Palette.egg(def.entityType), Palette.GENERAL + "Nguồn", Lore.of()
                 .section("Thông tin:")
                 .row("Loại", mythic ? "MythicMobs" : "Mob thường")
                 .row(mythic ? "Mob MythicMobs" : "Loại mob", mythic ? def.mythicId : def.entityType.name())
@@ -66,7 +66,7 @@ public final class MobEditorMenu extends Menu {
                 }, this::open).open();
             }
         });
-        set(12, icon(Material.CLOCK, Palette.GENERAL + "Thời gian tồn tại", Lore.of()
+        set(5, icon(Material.CLOCK, Palette.GENERAL + "Thời gian tồn tại", Lore.of()
                 .desc("Hết thời gian mà chưa bị giết thì mob biến mất, không có thưởng.")
                 .section("Thông tin:").row("Hiện tại", def.lifetimeSeconds <= 0 ? "mãi mãi" : Format.duration(def.lifetimeSeconds))
                 .action("Chuột trái để nhập số giây (0 = mãi mãi)").build()),
@@ -74,7 +74,7 @@ public final class MobEditorMenu extends Menu {
                     def.lifetimeSeconds = (int) v;
                     save();
                 }));
-        set(13, icon(Material.EXPERIENCE_BOTTLE, Palette.GENERAL + "Kinh nghiệm rơi ra", Lore.of()
+        set(6, icon(Material.EXPERIENCE_BOTTLE, Palette.GENERAL + "Kinh nghiệm rơi ra", Lore.of()
                 .section("Thông tin:").row("Hiện tại", Format.number(def.xp))
                 .action("Chuột trái để nhập số").build()),
                 click -> askNumber("input.xp", 0, 1_000_000, v -> {
@@ -87,7 +87,7 @@ public final class MobEditorMenu extends Menu {
                 .section("Thông tin:").row("Hiện tại", Palette.onOff(def.nameBar))
                 .row("Độ cao trên model", Format.decimal(def.nametagOffset) + " block");
         if (name == null) barLore.note("&#FFD166", "(!) Mob chưa có tên nên chưa hiện gì");
-        set(14, icon(Material.RED_DYE, Palette.GENERAL + "Thanh máu ở tên", barLore
+        set(28, icon(Material.RED_DYE, Palette.GENERAL + "Thanh máu ở tên", barLore
                 .action("Chuột trái để bật/tắt").secondary("Chuột phải để chỉnh độ cao (mob có model)").build()), click -> {
             if (click.isRightClick()) {
                 askNumber("input.nametag-offset", -5, 10, v -> {
@@ -105,47 +105,47 @@ public final class MobEditorMenu extends Menu {
                 .section("Thông tin:").row("Hiện tại", Palette.onOff(def.bossBar))
                 .row("Tầm hiện", plugin.settings().bossBarRange + " block");
         if (name == null) bossLore.note("&#FFD166", "(!) Mob chưa có tên nên chưa hiện gì");
-        set(15, icon(Material.DRAGON_HEAD, Palette.GENERAL + "Thanh máu bossbar", bossLore
+        set(29, icon(Material.DRAGON_HEAD, Palette.GENERAL + "Thanh máu bossbar", bossLore
                 .action("Chuột trái để bật/tắt").build()), click -> {
             def.bossBar = !def.bossBar;
             save();
             refresh();
         });
-        // row 2-3: stats
-        stat(19, Stat.HEALTH, Material.RED_DYE, "Máu tối đa", "Giới hạn: " + Format.number(plugin.settings().maxHealth)
+        // row 2: stats
+        stat(10, Stat.HEALTH, Material.RED_DYE, "Máu tối đa", "Giới hạn: " + Format.number(plugin.settings().maxHealth)
                 + " (spigot.yml maxHealth)", 1, plugin.settings().maxHealth);
-        stat(20, Stat.ARMOR, Material.IRON_CHESTPLATE, "Giáp", "Giáp vanilla, tối đa 30.", 0, 30);
-        stat(21, Stat.TOUGHNESS, Material.DIAMOND_CHESTPLATE, "Độ cứng giáp", "Tối đa 20.", 0, 20);
-        stat(22, Stat.DAMAGE, Material.IRON_SWORD, "Sát thương đánh thường",
+        stat(11, Stat.ARMOR, Material.IRON_CHESTPLATE, "Giáp", "Giáp vanilla, tối đa 30.", 0, 30);
+        stat(12, Stat.TOUGHNESS, Material.DIAMOND_CHESTPLATE, "Độ cứng giáp", "Tối đa 20.", 0, 20);
+        stat(13, Stat.DAMAGE, Material.IRON_SWORD, "Sát thương đánh thường",
                 "Chỉ đòn cận chiến. Sát thương skill chỉnh trong file MythicMobs.", 0, 2048);
-        stat(23, Stat.SPEED, Material.FEATHER, "Tốc độ di chuyển", "Zombie mặc định 0,23.", 0, 1);
-        stat(24, Stat.FOLLOW_RANGE, Material.SPYGLASS, "Tầm truy đuổi", "Số block mob phát hiện người chơi.", 0, 2048);
-        stat(25, Stat.KNOCKBACK, Material.SHIELD, "Kháng đẩy lùi", "0 = bị đẩy bình thường, 1 = không bị đẩy.", 0, 1);
-        // row 4: sub-menus
-        set(28, icon(Material.DIAMOND_SWORD, Palette.EQUIP + "Trang bị", Lore.of()
+        stat(14, Stat.SPEED, Material.FEATHER, "Tốc độ di chuyển", "Zombie mặc định 0,23.", 0, 1);
+        stat(15, Stat.FOLLOW_RANGE, Material.SPYGLASS, "Tầm truy đuổi", "Số block mob phát hiện người chơi.", 0, 2048);
+        stat(16, Stat.KNOCKBACK, Material.SHIELD, "Kháng đẩy lùi", "0 = bị đẩy bình thường, 1 = không bị đẩy.", 0, 1);
+        // rows 1, 4, 5: sub-menus
+        set(4, icon(Material.DIAMOND_SWORD, Palette.EQUIP + "Trang bị", Lore.of()
                 .desc("Vũ khí, vật phẩm cầm tay và giáp mob mặc.")
                 .section("Thông tin:").row("Đã đặt", def.equipment.size() + "/6 ô")
                 .action("Chuột trái để mở").build()), click -> new EquipmentMenu(plugin, player, def, this).open());
-        set(30, icon(Material.ARMOR_STAND, Palette.MODEL + "Model", Lore.of()
+        set(3, icon(Material.ARMOR_STAND, Palette.MODEL + "Model", Lore.of()
                 .desc("Gắn model ModelEngine cho mob.")
                 .section("Thông tin:").row("Model", def.modelId.isEmpty() ? "không" : def.modelId)
                 .action("Chuột trái để mở").build()), click -> new ModelMenu(plugin, player, def, this).open());
-        set(32, icon(Material.CHEST, Palette.REWARD + "Phần thưởng", Lore.of()
+        set(37, icon(Material.CHEST, Palette.REWARD + "Phần thưởng", Lore.of()
                 .desc("Thay hoàn toàn đồ rơi gốc của mob.")
                 .section("Thông tin:")
                 .row("Chế độ", def.rewardMode.label)
                 .row("Nhân thưởng theo rank", Palette.onOff(def.multiplierEnabled))
                 .action("Chuột trái để mở").build()), click -> new RewardMenu(plugin, player, def, this).open());
-        set(34, icon(Material.BELL, Palette.ANNOUNCE + "Thông báo", Lore.of()
+        set(38, icon(Material.BELL, Palette.ANNOUNCE + "Thông báo", Lore.of()
                 .desc("Thông báo chat toàn server khi mob xuất hiện, chết, biến mất.")
                 .section("Thông tin:").row("Xuất hiện", Palette.onOff(def.spawn.enabled))
                 .row("Bị hạ gục", Palette.onOff(def.death.enabled)).row("Biến mất", Palette.onOff(def.despawn.enabled))
                 .action("Chuột trái để mở").build()), click -> new AnnounceMenu(plugin, player, def, this).open());
-        set(40, icon(Material.BLAZE_POWDER, Palette.SKILL + "Skill", Lore.of()
+        set(19, icon(Material.BLAZE_POWDER, Palette.SKILL + "Skill", Lore.of()
                 .desc("Dùng lại skill có sẵn trong MythicMobs cho mob này: chọn skill, khi nào dùng và nhắm vào ai.")
                 .section("Thông tin:").row("Số skill", String.valueOf(def.skills.size()))
                 .action("Chuột trái để mở").build()), click -> new SkillsMenu(plugin, player, def, this).open());
-        set(42, icon(Material.SPAWNER, Palette.SPAWNER + "Holo spawner", Lore.of()
+        set(30, icon(Material.SPAWNER, Palette.SPAWNER + "Holo spawner", Lore.of()
                 .desc("Mẫu holo của các spawner spawn ra mob này. Mỗi mob một mẫu riêng.")
                 .section("Thông tin:").row("Số dòng", String.valueOf(def.spawnerHolo.size()))
                 .action("Chuột trái để sửa").danger("Shift + chuột phải để về mẫu mặc định").build()), click -> {
@@ -176,7 +176,30 @@ public final class MobEditorMenu extends Menu {
             plugin.messages().send(player, "mob.deleted", "id", def.id);
             Gui.mobs(plugin, player);
         }, this::open).open());
+        set(17, icon(Material.TARGET, Palette.STATS + "Máu theo số hit", Lore.of()
+                .desc("Bật: mỗi đòn của người chơi chỉ trừ đúng 1 máu, dù sát thương bao nhiêu. Máu tối đa 100 = 100 hit. Lửa, rơi, mob khác không làm mất máu.")
+                .section("Thông tin:").row("Hiện tại", Palette.onOff(def.hitHealth))
+                .action("Chuột trái để bật/tắt").build()), click -> {
+            def.hitHealth = !def.hitHealth;
+            save();
+            refresh();
+        });
+        set(20, icon(Material.GOLD_NUGGET, Palette.SKILL + "Kỹ năng kẻ trộm", Lore.of()
+                .desc("Cướp tiền / gem của người chơi khi đánh trúng, đi săn người chơi sau khi xuất hiện, dịch chuyển khi mất máu. Người đánh lấy lại dần, người hạ gục nhận cả túi.")
+                .section("Thông tin:").row("Cướp tiền", Palette.onOff(def.thief.stealMoney))
+                .row("Cướp gem", Palette.onOff(def.thief.stealGem))
+                .action("Chuột trái để mở").build()), click -> new ThiefMenu(plugin, player, def, this).open());
+        label(0, Palette.GENERAL, "Chung", "Tên, nguồn, model, trang bị, thời gian tồn tại, kinh nghiệm.");
+        label(9, Palette.STATS, "Chỉ số", "Máu, giáp, sát thương, tốc độ và cách tính máu.");
+        label(18, Palette.SKILL, "Chiến đấu", "Skill MythicMobs và kỹ năng riêng của MyBoxMobs.");
+        label(27, Palette.GENERAL, "Hiển thị", "Thanh máu ở tên, bossbar, holo spawner.");
+        label(36, Palette.REWARD, "Thưởng & thông báo", "Phần thưởng khi hạ gục và thông báo chat.");
         fill(0);
+    }
+
+    /** Coloured pane at the start of a row naming the group of that row. */
+    private void label(int slot, String color, String name, String desc) {
+        set(slot, icon(Material.LIGHT_BLUE_STAINED_GLASS_PANE, color + name, Lore.of().desc(desc).build()), null);
     }
 
     /** Editor of a mob's spawner hologram template (also opened from the spawner menu). */

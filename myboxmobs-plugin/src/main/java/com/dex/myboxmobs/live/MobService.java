@@ -45,6 +45,7 @@ public final class MobService {
     private final NamespacedKey damageKey;
     private final NamespacedKey lastHitKey;
     private final NamespacedKey clanKey;
+    private final NamespacedKey thiefKey;
     private final List<EndListener> endListeners = new ArrayList<>();
 
     public MobService(MyBoxMobsPlugin plugin) {
@@ -56,6 +57,7 @@ public final class MobService {
         this.damageKey = new NamespacedKey(plugin, "damage");
         this.lastHitKey = new NamespacedKey(plugin, "lasthit");
         this.clanKey = new NamespacedKey(plugin, "clan");
+        this.thiefKey = new NamespacedKey(plugin, "thief");
     }
 
     public Tracker tracker() {
@@ -120,6 +122,7 @@ public final class MobService {
         live.ownerClan = ownerClan;
         tracker.add(live);
         plugin.nameTags().added(live.uuid());
+        plugin.thieves().start(live);
         MbmMobSpawnEvent event = new MbmMobSpawnEvent(entity, def.id, origin, summoner);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
@@ -337,6 +340,7 @@ public final class MobService {
             MbmMobDeathEvent event = new MbmMobDeathEvent(mob.entity, def.id, killer, damage);
             Bukkit.getPluginManager().callEvent(event);
             if (killer != null) plugin.kills().addKill(killer, def.id);
+            plugin.thieves().payKiller(mob, killer == null ? null : Bukkit.getPlayer(killer));
             List<ClanDamage.Entry> clanBoard = def.rewardMode == MobDefinition.RewardMode.TOP_CLAN
                     ? ClanDamage.of(damage, plugin.clans()::clanOf) : null;
             if (!event.isRewardsCancelled()) plugin.rewards().pay(def, killer, damage, mob.ownerClan, clanBoard);
@@ -422,6 +426,7 @@ public final class MobService {
                 long now = System.currentTimeMillis();
                 for (SkillEntry s : def.skills) if (s.trigger == SkillEntry.Trigger.TIMER) live.lastCast.put(s, now);
                 if (def.source == MobDefinition.Source.CUSTOM) attachModel(def, e);
+                plugin.thieves().adopt(live, pdc.get(thiefKey, PersistentDataType.STRING));
             }
             live.ownerClan = uuidOrNull(pdc.get(clanKey, PersistentDataType.STRING));
             tracker.add(live);
@@ -480,6 +485,7 @@ public final class MobService {
         PersistentDataContainer pdc = mob.entity.getPersistentDataContainer();
         pdc.set(damageKey, PersistentDataType.STRING, mob.serializeDamage());
         if (mob.lastHitter != null) pdc.set(lastHitKey, PersistentDataType.STRING, mob.lastHitter.toString());
+        if (mob.thief != null) pdc.set(thiefKey, PersistentDataType.STRING, mob.thief.serialize());
     }
 
     private static @Nullable UUID uuidOrNull(@Nullable String raw) {

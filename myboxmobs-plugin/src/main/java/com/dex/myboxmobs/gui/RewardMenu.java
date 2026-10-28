@@ -126,7 +126,7 @@ public final class RewardMenu extends Menu {
             case KILLER -> "Chỉ người đánh đòn cuối nhận quà.";
             case TOP -> "Chia quà theo hạng sát thương của từng người, mỗi hạng có tỉ lệ nhận và quà riêng.";
             case TOP_CLAN -> "Cộng sát thương theo bang hội. Mỗi hạng bang nhận Danh Vọng, Minh Huy; thành viên đã đánh và đang online nhận quà.";
-            case CLAN_SHARED -> "Cho boss của bàn bang hội. Không có Danh Vọng hay Minh Huy, mọi người nhận quà như nhau.";
+            case CLAN_SHARED -> "Cho boss của tế đàn chỉ Minh Chủ triệu hồi. Không có Danh Vọng hay Minh Huy, mọi người nhận quà như nhau.";
         };
     }
 

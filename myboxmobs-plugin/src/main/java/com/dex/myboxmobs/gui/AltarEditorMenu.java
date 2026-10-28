@@ -20,7 +20,7 @@ public final class AltarEditorMenu extends Menu {
     private final AltarDef d;
 
     public AltarEditorMenu(MyBoxMobsPlugin plugin, Player player, AltarDef d) {
-        super(plugin, player, 3, "&8Bàn triệu hồi &8[" + d.id + "&8]");
+        super(plugin, player, 3, "&8Tế đàn &8[" + d.id + "&8]");
         this.d = d;
     }
 
@@ -91,14 +91,14 @@ public final class AltarEditorMenu extends Menu {
             Lore clanLore = Lore.of()
                     .desc("Chỉ Minh Chủ được triệu hồi. Boss thuộc về bang hội đó: chỉ thành viên mới đánh được, boss vẫn đánh mọi người. Thông báo chỉ gửi trong bang.")
                     .section("Thông tin:").row("Hiện tại", Palette.onOff(d.clan));
-            if (!plugin.clans().available()) clanLore.note("&#FF6B6B", "✘ Chưa cài BoxClans, bàn đang không dùng được");
+            if (!plugin.clans().available()) clanLore.note("&#FF6B6B", "✘ Chưa cài BoxClans, tế đàn đang không dùng được");
             if (d.clan && d.mob != null && !d.mob.mythic()) {
                 var def = plugin.registry().get(d.mob.id());
                 if (def != null && def.rewardMode != com.dex.myboxmobs.mob.MobDefinition.RewardMode.CLAN_SHARED) {
                     clanLore.note("&#FFD166", "(!) Mob đang ở chế độ " + def.rewardMode.label + ", nên đổi sang Quà bang hội");
                 }
             }
-            set(14, icon(d.clan ? Material.WHITE_BANNER : Material.GRAY_BANNER, Palette.CLAN + "Bàn bang hội",
+            set(14, icon(d.clan ? Material.WHITE_BANNER : Material.GRAY_BANNER, Palette.CLAN + "Chỉ Minh Chủ triệu hồi",
                     clanLore.action("Chuột trái để bật/tắt").build()), click -> {
                 d.clan = !d.clan;
                 changed();
@@ -108,7 +108,7 @@ public final class AltarEditorMenu extends Menu {
                 .section("Thông tin:").row("Số dòng", String.valueOf(d.holoLines.size()))
                 .row("DecentHolograms", plugin.holograms().available() ? "có" : "&#FF6B6Bchưa cài")
                 .action("Chuột trái để sửa nội dung").build()), click -> new LinesMenu(plugin, player,
-                "&8Holo bàn &8[" + d.id + "&8]", d.holoLines,
+                "&8Holo tế đàn &8[" + d.id + "&8]", d.holoLines,
                 List.of("%mob% tên boss", "%item% vật phẩm yêu cầu", "%amount% số lượng"),
                 () -> plugin.altars().save(), () -> player.sendMessage(Text.parse(String.join("\n", d.holoLines))), this).open());
         set(16, icon(Material.ENDER_PEARL, Palette.ALTAR + "Vị trí", Lore.of()
@@ -123,8 +123,8 @@ public final class AltarEditorMenu extends Menu {
         });
         set(18, icon(Material.ARROW, "&#BFC7D5Quay lại", Lore.of().action("Chuột trái để quay lại").build()),
                 click -> Gui.altars(plugin, player));
-        set(26, icon(Material.BARRIER, "&#FF8A8AXoá bàn triệu hồi", Lore.of().danger("Chuột trái để xoá").build()),
-                click -> new ConfirmMenu(plugin, player, "bàn " + d.id, () -> {
+        set(26, icon(Material.BARRIER, "&#FF8A8AXoá tế đàn", Lore.of().danger("Chuột trái để xoá").build()),
+                click -> new ConfirmMenu(plugin, player, "tế đàn " + d.id, () -> {
                     plugin.altars().delete(d);
                     plugin.messages().send(player, "altar.deleted", "id", d.id);
                     Gui.altars(plugin, player);

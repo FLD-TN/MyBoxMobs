@@ -1,5 +1,25 @@
 # MyBoxMobs changelog
 
+## 0.8.0 (2026-10-28)
+
+- Spawner area: Pos1 / Pos2 (GUI or `/mbm spawner pos1|pos2 <id>`, the ground block you look at). Mobs spawn at a
+  random standing place inside the area, one block above the ground; the hologram, activation radius and kept chunk
+  use the centre of the area; leash pulls mobs back to a random place in the area. "Xem khu vực" shows the outline
+  in particles for 10 s.
+- Thief skill (per mob, GUI "Kỹ năng kẻ trộm"): steals money (Vault) and / or gems (BoxCore) from the players it
+  hits (% of the balance, random range, cap, cooldown per player). Bag = base + bonus per player nearby at spawn.
+  Hunt phase after spawning (fast, chases the closest player it can rob), then slower and teleports each time it
+  loses a part of its max health (stays inside its spawner's area). Every player hit gives back a random percent of
+  everything it stole; the killer gets the bag and what is left. Despawn = the loot is gone. State saved with the
+  mob across unloads and restarts.
+- Hit-based health (per mob): every player hit takes exactly 1 health; fire, falling, other mobs do nothing.
+- Mob editor and spawner editor regrouped: one row per group with a labelled pane (general, stats, combat, display,
+  rewards & announcements / mobs & amount, time, place & area, activation, display).
+- Altars are called "tế đàn". Player messages moved to new keys (`shrine.*`) worded without feature names, so the
+  new wording applies without editing messages.yml; the "only Minh Chủ" altar no longer says "bàn bang hội".
+- The altar block disappears while its boss lives (so it never gets in the way) and comes back exactly as it was
+  when the boss dies or leaves; its block data is saved, nothing can be placed or flow into its place meanwhile.
+
 ## 0.7.6 (2026-10-27)
 
 - Spawner option "Hồi sinh sau khi chết": every mob that is gone (killed, lifetime over, removed) comes back exactly

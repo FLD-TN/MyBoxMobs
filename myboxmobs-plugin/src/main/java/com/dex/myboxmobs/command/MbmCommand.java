@@ -197,7 +197,7 @@ public final class MbmCommand implements TabExecutor {
             return;
         }
         if (args.length < 3) {
-            m().send(sender, "command.usage", "usage", "/mbm spawner <create|delete|tp|toggle|holo> <mã>");
+            m().send(sender, "command.usage", "usage", "/mbm spawner <create|delete|tp|toggle|holo|pos1|pos2> <mã>");
             return;
         }
         String id = args[2].toLowerCase(Locale.ROOT);
@@ -240,7 +240,14 @@ public final class MbmCommand implements TabExecutor {
                 plugin.spawners().save();
                 m().send(sender, "spawner.holo-toggled", "id", id, "state", d.hologram ? m().raw("state.on") : m().raw("state.off"));
             }
-            default -> m().send(sender, "command.usage", "usage", "/mbm spawner <create|delete|tp|toggle|holo> <mã>");
+            case "pos1", "pos2" -> {
+                if (!(sender instanceof Player p)) {
+                    m().send(sender, "command.player-only");
+                    return;
+                }
+                com.dex.myboxmobs.gui.SpawnerEditorMenu.setCorner(plugin, p, d, sub.equals("pos1") ? 1 : 2);
+            }
+            default -> m().send(sender, "command.usage", "usage", "/mbm spawner <create|delete|tp|toggle|holo|pos1|pos2> <mã>");
         }
     }
 
@@ -308,7 +315,7 @@ public final class MbmCommand implements TabExecutor {
     /** {@code /mbm altar givekey <altar> <player> [amount]}: works from the console (shops). */
     private void giveKey(CommandSender sender, String[] args, AltarDef d) {
         if (args.length < 4) {
-            m().send(sender, "command.usage", "usage", "/mbm altar givekey <bàn> <người chơi> [số lượng]");
+            m().send(sender, "command.usage", "usage", "/mbm altar givekey <tế đàn> <người chơi> [số lượng]");
             return;
         }
         Player target = Bukkit.getPlayerExact(args[3]);
@@ -324,7 +331,7 @@ public final class MbmCommand implements TabExecutor {
         if (args.length >= 5) {
             double v = Format.parse(args[4]);
             if (Double.isNaN(v) || v < 1 || v > 2304) {
-                m().send(sender, "command.usage", "usage", "/mbm altar givekey <bàn> <người chơi> [1-2304]");
+                m().send(sender, "command.usage", "usage", "/mbm altar givekey <tế đàn> <người chơi> [1-2304]");
                 return;
             }
             amount = (int) v;
@@ -345,7 +352,7 @@ public final class MbmCommand implements TabExecutor {
             return switch (sub) {
                 case "spawn", "kill" -> filter(plugin.registry().ids(), args[1]);
                 case "killall" -> filter(worlds(), args[1]);
-                case "spawner" -> filter(List.of("create", "delete", "list", "tp", "toggle", "holo"), args[1]);
+                case "spawner" -> filter(List.of("create", "delete", "list", "tp", "toggle", "holo", "pos1", "pos2"), args[1]);
                 case "altar" -> filter(List.of("create", "delete", "list", "givekey"), args[1]);
                 default -> List.of();
             };

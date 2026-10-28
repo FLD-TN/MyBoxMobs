@@ -24,6 +24,8 @@ public final class LiveMob {
      * {@code null} for every other mob.
      */
     public @Nullable UUID ownerClan;
+    /** Bag and loot of a thief mob ({@link com.dex.myboxmobs.mob.ThiefSettings}); null for other mobs. */
+    public @Nullable ThiefState thief;
     public final long spawnedAt;
     /** Epoch millis, 0 = never. */
     public final long expiresAt;

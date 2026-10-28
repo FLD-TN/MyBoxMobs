@@ -28,9 +28,9 @@ command:
     - '&7• &f/mbm kill <mob> [world] &8- &#BFC7D5xoá mob đang sống'
     - '&7• &f/mbm killall [world]'
     - '&7• &f/mbm list &8- &#BFC7D5mob đang sống (bấm để dịch chuyển)'
-    - '&7• &f/mbm spawner <create|delete|list|tp|toggle|holo> [mã]'
+    - '&7• &f/mbm spawner <create|delete|list|tp|toggle|holo|pos1|pos2> [mã]'
     - '&7• &f/mbm altar <create|delete|list> [mã] [mob]'
-    - '&7• &f/mbm altar givekey <bàn> <người chơi> [số lượng] &8- &#BFC7D5đưa vật phẩm triệu hồi'
+    - '&7• &f/mbm altar givekey <tế đàn> <người chơi> [số lượng] &8- &#BFC7D5đưa vật phẩm triệu hồi'
     - '&7• &f/mbm reload'
 
 list:
@@ -59,6 +59,8 @@ input:
   rank-chance: '&#FFD166Nhập tỉ lệ nhận quà (%) của hạng này'
   line: '&#FFD166Nhập nội dung dòng &8(&#BFC7D5gõ &ftrong &#BFC7D5cho dòng trống&8)'
   interval: '&#FFD166Nhập số giây giữa hai đợt spawn'
+  percent-range: '&#FFD166Nhập khoảng % (ví dụ &f1-3&#FFD166, &f0,5-2&#FFD166) hoặc một số'
+  invalid-percent-range: '&#FF6B6B✘ Hãy nhập một số (2) hoặc khoảng (1-3), từ 0 đến 100'
   respawn-delay: '&#FFD166Nhập số giây hồi sinh sau khi mob chết (ví dụ &f1800 &#FFD166= 30 phút)'
   amount-wave: '&#FFD166Nhập số mob mỗi đợt'
   max-alive: '&#FFD166Nhập số mob tối đa sống cùng lúc'
@@ -104,35 +106,50 @@ spawner:
   waiting: '&#BFC7D5chờ người chơi tới gần'
   # %health% / %damage% of the hologram when the value is not known yet (before the first spawn)
   stat-default: '?'
+  region-set: '&#7CFC9A✔ Đã đặt %pos% của spawner &f%id% &#7CFC9Atại &f%x% %y% %z%'
+  region-look: '&#FF6B6B✘ Hãy nhìn vào block mặt đất (trong 8 block) để đặt góc khu vực'
+  region-cleared: '&#FFD166(!) Đã bỏ khu vực của spawner &f%id%&#FFD166, mob spawn quanh vị trí spawner như cũ'
   schedule-invalid: '&#FF6B6B✘ Giờ không hợp lệ: &f%time% &#FF6B6B(dùng dạng 20:30)'
 
 altar:
-  created: '&#7CFC9A✔ Đã tạo bàn triệu hồi &f%id%&#7CFC9A, mở &f/mbm &#7CFC9Ađể đặt vật phẩm yêu cầu'
-  deleted: '&#7CFC9A✔ Đã xoá bàn triệu hồi &f%id%'
-  exists: '&#FF6B6B✘ Bàn &f%id% &#FF6B6Bđã tồn tại'
-  unknown: '&#FF6B6B✘ Không có bàn &f%id%'
-  look-at-block: '&#FF6B6B✘ Hãy nhìn vào block làm bàn triệu hồi (ví dụ &f%block%&#FF6B6B)'
-  block-used: '&#FF6B6B✘ Block này đã là bàn triệu hồi'
-  list-header: '&#F7A4C0Bàn triệu hồi: &f%amount%'
+  created: '&#7CFC9A✔ Đã tạo tế đàn &f%id%&#7CFC9A, mở &f/mbm &#7CFC9Ađể đặt vật phẩm yêu cầu'
+  deleted: '&#7CFC9A✔ Đã xoá tế đàn &f%id%'
+  exists: '&#FF6B6B✘ Tế đàn &f%id% &#FF6B6Bđã tồn tại'
+  unknown: '&#FF6B6B✘ Không có tế đàn &f%id%'
+  look-at-block: '&#FF6B6B✘ Hãy nhìn vào block làm tế đàn (ví dụ &f%block%&#FF6B6B)'
+  block-used: '&#FF6B6B✘ Block này đã là tế đàn'
+  list-header: '&#F7A4C0Tế đàn: &f%amount%'
   list-line: '&7• &f%id% &8- &#BFC7D5%mob% &8(%world% %x% %y% %z%)'
-  no-permission: '&#FF6B6B✘ Bạn không có quyền triệu hồi'
-  not-ready: '&#FFD166(!) Bàn triệu hồi này chưa được cài đặt xong'
+  requirement-set: '&#7CFC9A✔ Đã đặt vật phẩm yêu cầu: &fx%amount% %item%'
+  requirement-replaced: '&#7CFC9A✔ Đã thay vật phẩm yêu cầu thành &fx%amount% %item%'
+  requirement-cleared: '&#FFD166(!) Đã bỏ vật phẩm yêu cầu, tế đàn chưa dùng được cho tới khi đặt lại'
+  no-key: '&#FF6B6B✘ Tế đàn &f%id% &#FF6B6Bchưa đặt vật phẩm yêu cầu'
+  key-given: '&#7CFC9A✔ Đã đưa &fx%amount% %item% &#7CFC9Acho &f%player%'
+
+# Player messages of the summoning places (tế đàn). They never name a feature.
+shrine:
+  no-permission: '&#FF6B6B✘ Bạn không có quyền triệu hồi tại đây'
+  not-ready: '&#FFD166(!) Nơi này chưa thể triệu hồi'
+  unavailable: '&#FF6B6B✘ Hiện chưa thể triệu hồi tại đây'
+  leader-only: '&#FF6B6B✘ Chỉ Minh Chủ mới có thể triệu hồi tại đây'
   busy: '&#FF6B6B✘ %mob% &#FF6B6Bđang xuất hiện, chưa thể triệu hồi thêm'
   cooldown: '&#FF6B6B✘ Có thể triệu hồi lại sau &f%time%'
   wrong-item: '&#FF6B6B✘ Cần cầm &fx%amount% %item% &#FF6B6Btrên tay để triệu hồi'
-  requirement-set: '&#7CFC9A✔ Đã đặt vật phẩm yêu cầu: &fx%amount% %item%'
-  requirement-replaced: '&#7CFC9A✔ Đã thay vật phẩm yêu cầu thành &fx%amount% %item%'
-  requirement-cleared: '&#FFD166(!) Đã bỏ vật phẩm yêu cầu, bàn chưa dùng được cho tới khi đặt lại'
   failed: '&#FF6B6B✘ Không triệu hồi được, hãy báo quản trị viên'
   summoned: '&#7CFC9A✔ Bạn đã triệu hồi %mob%'
-  protected: '&#FF6B6B✘ Không thể phá bàn triệu hồi'
-  # Bàn bang hội
-  clan-unavailable: '&#FF6B6B✘ Bàn bang hội đang không dùng được (thiếu BoxClans)'
-  clan-leader-only: '&#FF6B6B✘ Chỉ Minh Chủ mới được triệu hồi ở bàn bang hội'
-  # Gửi cho các thành viên đang online của bang. %player% %mob% %world% %x% %y% %z%
+  protected: '&#FF6B6B✘ Không thể phá block này'
+  # To the online members of the clan. %player% %mob% %world% %x% %y% %z%
   clan-summoned: '&#FFD166Minh Chủ &f%player% &#FFD166đã triệu hồi %mob% &#FFD166cho toàn bang hội, hãy tới tham gia nhanh nào! &8(%x% %y% %z%)'
-  no-key: '&#FF6B6B✘ Bàn &f%id% &#FF6B6Bchưa đặt vật phẩm yêu cầu'
-  key-given: '&#7CFC9A✔ Đã đưa &fx%amount% %item% &#7CFC9Acho &f%player%'
+
+# Thief mobs. %mob% mob name, %amount% amount, %gem% gem name, %items% money and / or gems
+thief:
+  robbed-money: '&#FF6B6BBạn vừa bị %mob% &#FF6B6Bcướp &a%amount%$'
+  robbed-gem: '&#FF6B6BBạn vừa bị %mob% &#FF6B6Bcướp &#8245F8%amount% %gem%'
+  refund: '&#7CFC9ABạn nhận lại %items% &#7CFC9Akhi tấn công %mob%'
+  killer: '&#FFD166Bạn nhận được %items% &#FFD166khi hạ gục %mob%'
+  money: '&a%amount%$'
+  gem: '&#8245F8%amount% %gem%'
+  and: ' &7và '
 
 clan:
   not-member: '&#FF6B6B✘ Boss này thuộc về bang hội %clan%&#FF6B6B, chỉ thành viên mới đánh được'
