@@ -92,16 +92,20 @@ public final class ThiefService implements Listener {
 
     private @Nullable Player prey(LiveMob mob, ThiefSettings t, long now) {
         Player best = null;
-        boolean bestFresh = false;
+        int bestScore = -1;
         double bestDist = Double.MAX_VALUE;
+        Economy eco = plugin.economy();
         for (Player p : playersAround(mob.entity, t.radius)) {
             Long last = mob.thief.lastSteal.get(p.getUniqueId());
             boolean fresh = last == null || now - last >= t.stealCooldown * 1000L;
+            boolean loot = (t.stealMoney && eco.moneyBalance(p) > 0) || (t.stealGem && eco.gemBalance(p) > 0);
+            // players with something to steal and not robbed lately first, then players with something, then the rest;
+            // the closest one inside the best group
+            int score = (loot ? 2 : 0) + (fresh ? 1 : 0);
             double d = p.getLocation().distanceSquared(mob.entity.getLocation());
-            // players it can rob right now come first, then the closest
-            if (best == null || (fresh && !bestFresh) || (fresh == bestFresh && d < bestDist)) {
+            if (score > bestScore || (score == bestScore && d < bestDist)) {
                 best = p;
-                bestFresh = fresh;
+                bestScore = score;
                 bestDist = d;
             }
         }

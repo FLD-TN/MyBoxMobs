@@ -1,5 +1,10 @@
 # MyBoxMobs changelog
 
+## 0.8.1 (2026-10-28)
+
+- Thief hunt: players with money / gems to steal come first (then not robbed lately, then the closest), so the thief
+  no longer chases players who have nothing.
+
 ## 0.8.0 (2026-10-28)
 
 - Spawner area: Pos1 / Pos2 (GUI or `/mbm spawner pos1|pos2 <id>`, the ground block you look at). Mobs spawn at a
