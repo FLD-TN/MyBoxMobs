@@ -20,8 +20,9 @@ public final class ThiefSettings {
     public double gemMinPercent = 1;
     public double gemMaxPercent = 3;
     public long gemCap = 500;
-    /** After the hunt: each hit robs every player within this many blocks of the mob (not only the one hit). */
+    /** After the hunt: every {@link #areaPeriod} seconds it robs every player within this many blocks, no hit needed. */
     public int areaRadius = 5;
+    public int areaPeriod = 3;
     /** Seconds before the same player can be robbed again. */
     public int stealCooldown = 5;
 
@@ -61,6 +62,7 @@ public final class ThiefSettings {
         y.set(path + ".gem.cap", gemCap);
         y.set(path + ".steal-cooldown", stealCooldown);
         y.set(path + ".area-radius", areaRadius);
+        y.set(path + ".area-period", areaPeriod);
         y.set(path + ".bag.money", bagMoney);
         y.set(path + ".bag.gem", bagGem);
         y.set(path + ".bag.bonus-money", bonusMoney);
@@ -89,6 +91,7 @@ public final class ThiefSettings {
         t.gemCap = Math.max(0, s.getLong("gem.cap", t.gemCap));
         t.stealCooldown = Math.max(0, s.getInt("steal-cooldown", t.stealCooldown));
         t.areaRadius = Math.max(1, Math.min(32, s.getInt("area-radius", t.areaRadius)));
+        t.areaPeriod = Math.max(1, Math.min(600, s.getInt("area-period", t.areaPeriod)));
         t.bagMoney = Math.max(0, s.getLong("bag.money", t.bagMoney));
         t.bagGem = Math.max(0, s.getLong("bag.gem", t.bagGem));
         t.bonusMoney = Math.max(0, s.getLong("bag.bonus-money", t.bonusMoney));

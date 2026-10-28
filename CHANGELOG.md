@@ -1,5 +1,11 @@
 # MyBoxMobs changelog
 
+## 0.8.3 (2026-10-28)
+
+- After the hunt the thief robs every player within "Bán kính cướp sau đi săn" every "Chu kỳ cướp sau đi săn"
+  seconds (defaults 5 blocks, 3 s), without having to hit anyone; the period is the only limit (no per-player
+  cooldown there), with particles and a sound. During the hunt it still robs only the player it hits.
+
 ## 0.8.2 (2026-10-28)
 
 - Thief teleport no longer waits for the end of the hunt: fixed marks every N % of the max health from spawning on

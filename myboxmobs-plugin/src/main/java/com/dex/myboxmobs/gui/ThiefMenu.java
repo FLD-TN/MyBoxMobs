@@ -40,9 +40,6 @@ public final class ThiefMenu extends Menu {
                 });
         number(3, Material.GOLD_INGOT, "Tối đa mỗi lần (tiền)", Palette.MONEY + Format.number(t.moneyCap) + "$",
                 "Dù % ra bao nhiêu cũng không cướp quá số này. 0 là không giới hạn.", 0, 1_000_000_000, v -> t.moneyCap = Math.round(v));
-        number(4, Material.TNT, "Bán kính cướp sau đi săn", t.areaRadius + " block",
-                "Trong lúc đi săn chỉ cướp người bị đánh. Hết đi săn: mỗi đòn trúng cướp tất cả người trong bán kính này.",
-                1, 32, v -> t.areaRadius = (int) v);
         toggle(5, Material.AMETHYST_SHARD, "Cướp gem", t.stealGem, "Cướp gem BoxCore của người bị đánh.", () -> t.stealGem = !t.stealGem);
         percentRange(6, Material.PAPER, "Mức cướp gem", t.gemMinPercent, t.gemMaxPercent, "% số gem mỗi lần, ngẫu nhiên trong khoảng.",
                 (min, max) -> {
@@ -52,7 +49,7 @@ public final class ThiefMenu extends Menu {
         number(7, Material.AMETHYST_CLUSTER, "Tối đa mỗi lần (gem)", Palette.GEM + Format.number(t.gemCap) + " " + gem,
                 "Dù % ra bao nhiêu cũng không cướp quá số này. 0 là không giới hạn.", 0, 1_000_000_000, v -> t.gemCap = Math.round(v));
         number(8, Material.CLOCK, "Hồi chiêu mỗi người", t.stealCooldown + " giây",
-                "Một người chỉ bị cướp lại sau bấy nhiêu giây.", 0, 3600, v -> t.stealCooldown = (int) v);
+                "Trong lúc đi săn: một người chỉ bị cướp lại sau bấy nhiêu giây.", 0, 3600, v -> t.stealCooldown = (int) v);
         // row 2: bag
         label(9, "Túi", "Người hạ gục nhận cả túi và phần cướp còn lại.");
         number(10, Material.GOLD_BLOCK, "Túi tiền ban đầu", Palette.MONEY + Format.number(t.bagMoney) + "$",
@@ -66,11 +63,17 @@ public final class ThiefMenu extends Menu {
         number(14, Material.COMPASS, "Phạm vi", t.radius + " block",
                 "Đếm người chơi lúc xuất hiện và tìm người để cướp trong phạm vi này.", 1, 128, v -> t.radius = (int) v);
         // row 3: hunt
-        label(18, "Đi săn", "Ngay sau khi xuất hiện: chỉ quyết định tốc độ và cách chọn người để cướp.");
+        label(18, "Đi săn", "Đi săn: chạy nhanh, cướp người bị đánh trúng. Sau đó: đi chậm, tự cướp mọi người quanh nó theo chu kỳ.");
         number(19, Material.CLOCK, "Thời gian đi săn", Format.duration(t.huntSeconds),
                 "Mob chạy nhanh và đuổi theo người chơi gần nhất chưa bị cướp.", 0, 3600, v -> t.huntSeconds = (int) v);
         number(20, Material.SUGAR, "Tốc độ khi đi săn", "x" + Format.decimal(t.huntSpeed),
                 "Nhân với tốc độ gốc của mob.", 0.1, 5, v -> t.huntSpeed = v);
+        number(23, Material.TNT, "Bán kính cướp sau đi săn", t.areaRadius + " block",
+                "Hết đi săn: mọi người chơi trong bán kính này bị cướp theo chu kỳ, không cần bị đánh.", 1, 32,
+                v -> t.areaRadius = (int) v);
+        number(24, Material.REPEATER, "Chu kỳ cướp sau đi săn", t.areaPeriod + " giây",
+                "Hết đi săn: cứ bấy nhiêu giây cướp một lượt tất cả người trong bán kính.", 1, 600,
+                v -> t.areaPeriod = (int) v);
         number(21, Material.COBWEB, "Tốc độ sau đi săn", "x" + Format.decimal(t.slowSpeed),
                 "Nhân với tốc độ gốc của mob, dưới 1 là đi chậm lại.", 0.1, 5, v -> t.slowSpeed = v);
         // row 4: teleport

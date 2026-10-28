@@ -70,6 +70,7 @@ class ThiefTest {
         d.thief.bonusGem = 20;
         d.thief.huntSeconds = 90;
         d.thief.areaRadius = 7;
+        d.thief.areaPeriod = 4;
         YamlConfiguration y = new YamlConfiguration();
         y.loadFromString(d.toYaml().saveToString());
         MobDefinition back = MobDefinition.fromYaml("goblin", y, d);
@@ -81,6 +82,7 @@ class ThiefTest {
         assertEquals(20, back.thief.bonusGem);
         assertEquals(90, back.thief.huntSeconds);
         assertEquals(7, back.thief.areaRadius);
+        assertEquals(4, back.thief.areaPeriod);
 
         MobDefinition old = MobDefinition.fromYaml("old", new YamlConfiguration(), d);
         assertFalse(old.hitHealth);

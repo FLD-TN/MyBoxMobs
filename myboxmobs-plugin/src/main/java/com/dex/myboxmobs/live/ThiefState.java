@@ -28,6 +28,8 @@ public final class ThiefState {
     public double baseSpeed = Double.NaN;
     /** Health marks (every blink percent of the max health) already crossed; -1 = not known yet. */
     public int marks = -1;
+    /** Last robbery of everyone around (after the hunt), epoch millis. */
+    public long lastArea;
 
     /** Amount stolen from {@code balance}: {@code percent} of it, rounded down, at most {@code cap}. */
     public static long stealAmount(long balance, double percent, long cap) {

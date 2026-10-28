@@ -86,10 +86,30 @@ public final class ThiefService implements Listener {
                     Player prey = prey(mob, t, now);
                     if (prey != null && m.getTarget() != prey) m.setTarget(prey);
                 }
-            } else if (!s.slowed) {
-                s.slowed = true;
-                speed(mob, t.slowSpeed);
+            } else {
+                if (!s.slowed) {
+                    s.slowed = true;
+                    speed(mob, t.slowSpeed);
+                }
+                // after the hunt: everyone around is robbed every few seconds, no hit needed
+                if (now - s.lastArea >= t.areaPeriod * 1000L) {
+                    s.lastArea = now;
+                    robAround(mob, le, now);
+                }
             }
+        }
+    }
+
+    private void robAround(LiveMob mob, LivingEntity le, long now) {
+        List<Player> around = playersAround(le, mob.def.thief.areaRadius);
+        if (around.isEmpty()) return;
+        boolean any = false;
+        for (Player p : around) any |= rob(mob, p, now, true);
+        if (any) {
+            Location at = le.getLocation().add(0, 1, 0);
+            at.getWorld().spawnParticle(Particle.WAX_OFF, at, 30, mob.def.thief.areaRadius / 2.0, 0.4,
+                    mob.def.thief.areaRadius / 2.0, 0);
+            at.getWorld().playSound(at, Sound.ENTITY_WITCH_CELEBRATE, 0.8f, 1.6f);
         }
     }
 
@@ -180,21 +200,22 @@ public final class ThiefService implements Listener {
         return null;
     }
 
-    /** During the hunt only the player hit is robbed; after it, every player within the area radius. */
+    /** During the hunt the player hit is robbed; after it the robbing is periodic ({@link #robAround}). */
     private void steal(LiveMob mob, Player victim) {
         long now = System.currentTimeMillis();
-        if (now < mob.thief.huntUntil) {
-            rob(mob, victim, now);
-            return;
-        }
-        for (Player p : playersAround(mob.entity, mob.def.thief.areaRadius)) rob(mob, p, now);
+        if (now < mob.thief.huntUntil) rob(mob, victim, now, false);
     }
 
-    private void rob(LiveMob mob, Player victim, long now) {
+    /**
+     * Robs one player; {@code periodic} robberies ignore the per-player cooldown (the period is the limit).
+     * True when something was taken.
+     */
+    private boolean rob(LiveMob mob, Player victim, long now, boolean periodic) {
         ThiefSettings t = mob.def.thief;
         ThiefState s = mob.thief;
         Long last = s.lastSteal.get(victim.getUniqueId());
-        if (last != null && now - last < t.stealCooldown * 1000L) return;
+        if (!periodic && last != null && now - last < t.stealCooldown * 1000L) return false;
+        boolean took = false;
         s.lastSteal.put(victim.getUniqueId(), now);
         Economy eco = plugin.economy();
         String name = plugin.mobs().displayName(mob.def);
@@ -203,6 +224,7 @@ public final class ThiefService implements Listener {
             long amount = ThiefState.stealAmount(eco.moneyBalance(victim), roll(r, t.moneyMinPercent, t.moneyMaxPercent), t.moneyCap);
             if (amount > 0 && eco.withdrawMoney(victim, amount)) {
                 s.stole(amount, 0);
+                took = true;
                 plugin.messages().send(victim, "thief.robbed-money", "mob", name, "amount", Format.number(amount));
             }
         }
@@ -210,11 +232,13 @@ public final class ThiefService implements Listener {
             long amount = ThiefState.stealAmount(eco.gemBalance(victim), roll(r, t.gemMinPercent, t.gemMaxPercent), t.gemCap);
             if (amount > 0 && eco.withdrawGems(victim, amount, "MyBoxMobs " + mob.def.id + " (bị cướp)")) {
                 s.stole(0, amount);
+                took = true;
                 plugin.messages().send(victim, "thief.robbed-gem", "mob", name, "amount", Format.number(amount),
                         "gem", eco.gemName());
             }
         }
         if (s.lastSteal.size() > 200) s.lastSteal.values().removeIf(v -> now - v > t.stealCooldown * 1000L);
+        return took;
     }
 
     private void refund(LiveMob mob, Player hitter) {
