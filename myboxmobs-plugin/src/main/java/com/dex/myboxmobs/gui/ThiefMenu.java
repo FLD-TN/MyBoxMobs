@@ -40,6 +40,9 @@ public final class ThiefMenu extends Menu {
                 });
         number(3, Material.GOLD_INGOT, "Tối đa mỗi lần (tiền)", Palette.MONEY + Format.number(t.moneyCap) + "$",
                 "Dù % ra bao nhiêu cũng không cướp quá số này. 0 là không giới hạn.", 0, 1_000_000_000, v -> t.moneyCap = Math.round(v));
+        number(4, Material.TNT, "Bán kính cướp sau đi săn", t.areaRadius + " block",
+                "Trong lúc đi săn chỉ cướp người bị đánh. Hết đi săn: mỗi đòn trúng cướp tất cả người trong bán kính này.",
+                1, 32, v -> t.areaRadius = (int) v);
         toggle(5, Material.AMETHYST_SHARD, "Cướp gem", t.stealGem, "Cướp gem BoxCore của người bị đánh.", () -> t.stealGem = !t.stealGem);
         percentRange(6, Material.PAPER, "Mức cướp gem", t.gemMinPercent, t.gemMaxPercent, "% số gem mỗi lần, ngẫu nhiên trong khoảng.",
                 (min, max) -> {
@@ -63,7 +66,7 @@ public final class ThiefMenu extends Menu {
         number(14, Material.COMPASS, "Phạm vi", t.radius + " block",
                 "Đếm người chơi lúc xuất hiện và tìm người để cướp trong phạm vi này.", 1, 128, v -> t.radius = (int) v);
         // row 3: hunt
-        label(18, "Đi săn", "Khoảng thời gian ngay sau khi xuất hiện.");
+        label(18, "Đi săn", "Ngay sau khi xuất hiện: chỉ quyết định tốc độ và cách chọn người để cướp.");
         number(19, Material.CLOCK, "Thời gian đi săn", Format.duration(t.huntSeconds),
                 "Mob chạy nhanh và đuổi theo người chơi gần nhất chưa bị cướp.", 0, 3600, v -> t.huntSeconds = (int) v);
         number(20, Material.SUGAR, "Tốc độ khi đi săn", "x" + Format.decimal(t.huntSpeed),
@@ -71,9 +74,10 @@ public final class ThiefMenu extends Menu {
         number(21, Material.COBWEB, "Tốc độ sau đi săn", "x" + Format.decimal(t.slowSpeed),
                 "Nhân với tốc độ gốc của mob, dưới 1 là đi chậm lại.", 0.1, 5, v -> t.slowSpeed = v);
         // row 4: teleport
-        label(27, "Dịch chuyển", "Chỉ sau khi hết thời gian đi săn.");
+        label(27, "Dịch chuyển", "Tính từ lúc xuất hiện, không phụ thuộc thời gian đi săn.");
         number(28, Material.ENDER_PEARL, "Dịch chuyển mỗi khi mất", Format.decimal(t.blinkPercent) + "% máu tối đa",
-                "0 là tắt dịch chuyển.", 0, 100, v -> t.blinkPercent = v);
+                "Mốc cố định theo máu tối đa: 50 máu, 20% = dịch chuyển ở 40, 30, 20, 10. 0 là tắt.", 0, 100,
+                v -> t.blinkPercent = v);
         number(29, Material.ENDER_EYE, "Khoảng cách dịch chuyển", t.blinkDistance + " block",
                 "Mob từ spawner có khu vực thì luôn ở trong khu vực đó.", 1, 64, v -> t.blinkDistance = (int) v);
         // row 5: refund

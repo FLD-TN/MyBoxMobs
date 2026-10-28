@@ -20,6 +20,8 @@ public final class ThiefSettings {
     public double gemMinPercent = 1;
     public double gemMaxPercent = 3;
     public long gemCap = 500;
+    /** After the hunt: each hit robs every player within this many blocks of the mob (not only the one hit). */
+    public int areaRadius = 5;
     /** Seconds before the same player can be robbed again. */
     public int stealCooldown = 5;
 
@@ -36,7 +38,7 @@ public final class ThiefSettings {
     public double huntSpeed = 1.8;
     /** Speed multiplier after the hunt. */
     public double slowSpeed = 0.7;
-    /** After the hunt: teleports each time it loses this percent of its max health, this far away. */
+    /** Teleports each time it loses this percent of its max health (from spawning on), this far away. */
     public double blinkPercent = 10;
     public int blinkDistance = 10;
 
@@ -58,6 +60,7 @@ public final class ThiefSettings {
         y.set(path + ".gem.max-percent", gemMaxPercent);
         y.set(path + ".gem.cap", gemCap);
         y.set(path + ".steal-cooldown", stealCooldown);
+        y.set(path + ".area-radius", areaRadius);
         y.set(path + ".bag.money", bagMoney);
         y.set(path + ".bag.gem", bagGem);
         y.set(path + ".bag.bonus-money", bonusMoney);
@@ -85,6 +88,7 @@ public final class ThiefSettings {
         t.gemMaxPercent = Math.max(t.gemMinPercent, percent(s.getDouble("gem.max-percent", t.gemMaxPercent)));
         t.gemCap = Math.max(0, s.getLong("gem.cap", t.gemCap));
         t.stealCooldown = Math.max(0, s.getInt("steal-cooldown", t.stealCooldown));
+        t.areaRadius = Math.max(1, Math.min(32, s.getInt("area-radius", t.areaRadius)));
         t.bagMoney = Math.max(0, s.getLong("bag.money", t.bagMoney));
         t.bagGem = Math.max(0, s.getLong("bag.gem", t.bagGem));
         t.bonusMoney = Math.max(0, s.getLong("bag.bonus-money", t.bonusMoney));

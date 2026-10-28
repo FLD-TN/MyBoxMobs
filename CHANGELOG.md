@@ -1,5 +1,12 @@
 # MyBoxMobs changelog
 
+## 0.8.2 (2026-10-28)
+
+- Thief teleport no longer waits for the end of the hunt: fixed marks every N % of the max health from spawning on
+  (max 50, 20 % = jumps at 40, 30, 20, 10). The hunt only sets the speed and how players are picked.
+- After the hunt each hit robs every player within the new "Bán kính cướp sau đi săn" (default 5 blocks, each with
+  their own cooldown); during the hunt only the player hit is robbed.
+
 ## 0.8.1 (2026-10-28)
 
 - Thief hunt: players with money / gems to steal come first (then not robbed lately, then the closest), so the thief

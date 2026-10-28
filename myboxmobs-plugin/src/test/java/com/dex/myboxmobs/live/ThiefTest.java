@@ -34,6 +34,20 @@ class ThiefTest {
     }
 
     @Test
+    void teleportMarksAreFixedOnTheMaxHealth() {
+        // max 50, every 20 %: marks at 40, 30, 20, 10
+        assertEquals(0, ThiefState.marksCrossed(50, 50, 20));
+        assertEquals(0, ThiefState.marksCrossed(50, 41, 20));
+        assertEquals(1, ThiefState.marksCrossed(50, 40, 20));
+        assertEquals(1, ThiefState.marksCrossed(50, 31, 20));
+        assertEquals(2, ThiefState.marksCrossed(50, 30, 20));
+        assertEquals(4, ThiefState.marksCrossed(50, 10, 20));
+        // max 50, every 10 %: one jump every 5 hits
+        assertEquals(1, ThiefState.marksCrossed(50, 45, 10));
+        assertEquals(0, ThiefState.marksCrossed(50, 20, 0), "0 % = no teleport");
+    }
+
+    @Test
     void stateSurvivesAnUnload() {
         ThiefState s = new ThiefState();
         s.bagMoney = 70_000;
@@ -55,6 +69,7 @@ class ThiefTest {
         d.thief.moneyMaxPercent = 4;
         d.thief.bonusGem = 20;
         d.thief.huntSeconds = 90;
+        d.thief.areaRadius = 7;
         YamlConfiguration y = new YamlConfiguration();
         y.loadFromString(d.toYaml().saveToString());
         MobDefinition back = MobDefinition.fromYaml("goblin", y, d);
@@ -65,6 +80,7 @@ class ThiefTest {
         assertEquals(4.0, back.thief.moneyMaxPercent);
         assertEquals(20, back.thief.bonusGem);
         assertEquals(90, back.thief.huntSeconds);
+        assertEquals(7, back.thief.areaRadius);
 
         MobDefinition old = MobDefinition.fromYaml("old", new YamlConfiguration(), d);
         assertFalse(old.hitHealth);

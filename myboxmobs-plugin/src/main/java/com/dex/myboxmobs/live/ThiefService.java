@@ -67,7 +67,11 @@ public final class ThiefService implements Listener {
             return;
         }
         mob.thief = s;
-        speed(mob, System.currentTimeMillis() < s.huntUntil ? mob.def.thief.huntSpeed : mob.def.thief.slowSpeed);
+        if (mob.entity instanceof LivingEntity le) {
+            s.marks = ThiefState.marksCrossed(maxHealth(le), le.getHealth(), mob.def.thief.blinkPercent);
+        }
+        s.slowed = System.currentTimeMillis() >= s.huntUntil;
+        speed(mob, s.slowed ? mob.def.thief.slowSpeed : mob.def.thief.huntSpeed);
     }
 
     /** Every second: hunt (chase the closest player not robbed lately), then slow down. */
@@ -85,7 +89,6 @@ public final class ThiefService implements Listener {
             } else if (!s.slowed) {
                 s.slowed = true;
                 speed(mob, t.slowSpeed);
-                s.nextBlinkHealth = le.getHealth() - maxHealth(le) * t.blinkPercent / 100.0;
             }
         }
     }
@@ -177,10 +180,19 @@ public final class ThiefService implements Listener {
         return null;
     }
 
+    /** During the hunt only the player hit is robbed; after it, every player within the area radius. */
     private void steal(LiveMob mob, Player victim) {
+        long now = System.currentTimeMillis();
+        if (now < mob.thief.huntUntil) {
+            rob(mob, victim, now);
+            return;
+        }
+        for (Player p : playersAround(mob.entity, mob.def.thief.areaRadius)) rob(mob, p, now);
+    }
+
+    private void rob(LiveMob mob, Player victim, long now) {
         ThiefSettings t = mob.def.thief;
         ThiefState s = mob.thief;
-        long now = System.currentTimeMillis();
         Long last = s.lastSteal.get(victim.getUniqueId());
         if (last != null && now - last < t.stealCooldown * 1000L) return;
         s.lastSteal.put(victim.getUniqueId(), now);
@@ -251,12 +263,15 @@ public final class ThiefService implements Listener {
 
     /** After the hunt: each lost part of the max health makes it jump about {@code blinkDistance} blocks away. */
     private void blinkCheck(LiveMob mob) {
-        if (!isThief(mob) || mob.ended || !mob.thief.slowed || !(mob.entity instanceof LivingEntity le) || !le.isValid()) return;
+        if (!isThief(mob) || mob.ended || !(mob.entity instanceof LivingEntity le) || !le.isValid() || le.isDead()) return;
         ThiefSettings t = mob.def.thief;
         ThiefState s = mob.thief;
-        if (t.blinkPercent <= 0 || Double.isNaN(s.nextBlinkHealth) || le.getHealth() > s.nextBlinkHealth || le.isDead()) return;
-        double step = maxHealth(le) * t.blinkPercent / 100.0;
-        while (s.nextBlinkHealth >= le.getHealth()) s.nextBlinkHealth -= step;
+        if (t.blinkPercent <= 0) return;
+        int marks = ThiefState.marksCrossed(maxHealth(le), le.getHealth(), t.blinkPercent);
+        if (s.marks < 0) s.marks = 0;
+        // one jump per newly crossed mark (several at once still make one jump)
+        if (marks <= s.marks) return;
+        s.marks = marks;
         Location to = blinkTarget(mob, t.blinkDistance);
         if (to == null) return;
         Location from = le.getLocation();
