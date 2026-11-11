@@ -1,6 +1,6 @@
 # MyBoxMobs
 
-Custom mobs and bosses for the BoxPvP server on top of MythicMobs and ModelEngine. Full design: `MYBOXMOBS_SPEC.md`.
+Custom mobs and bosses for the BoxPvP server on top of MythicMobs and ModelEngine.
 
 ## Install
 
@@ -17,9 +17,13 @@ Custom mobs and bosses for the BoxPvP server on top of MythicMobs and ModelEngin
 ./gradlew build
 ```
 
-The jar is `myboxmobs-plugin/build/libs/MyBoxMobs-<version>.jar`. Third-party plugin jars are not in git; put these in
-`libs/` before building: `MythicMobs-5.13.0.jar`, `ModelEngine-R4.1.1.jar`, `DecentHolograms-2.10.1.jar`
-(`boxcore-api-1.3.0.jar` and `boxclans-api-1.0.0.jar` are committed).
+The jar is `myboxmobs-plugin/build/libs/MyBoxMobs-<version>.jar`. No jar is in git; put these in `libs/` before building:
+
+- `DecentHolograms-2.10.1.jar`
+- `ModelEngine-R4.1.1.jar`
+- `MythicMobs-5.13.0.jar`
+- `boxclans-api-1.4.4.jar`
+- `boxcore-api-1.3.0.jar`
 
 ## Using a bought mob pack
 

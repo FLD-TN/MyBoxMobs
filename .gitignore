@@ -13,3 +13,12 @@ libs/DecentHolograms-*.jar
 
 # bought mob packs are never committed (keep them in LEGACY-BOXPVP/MobPacks)
 Warlord Kragan, The Bloodfury/
+
+# Không đưa lên repo public: jar bên thứ ba, file diff, ghi chú nội bộ
+libs/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.diff
+*SPEC*.md
+__pycache__/
+*.pyc
